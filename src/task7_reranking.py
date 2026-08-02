@@ -187,10 +187,10 @@ def rerank(
 if __name__ == "__main__":
     # Test with dummy data
     dummy_candidates = [
-        {"content": "Tuition fee payment schedule", "score": 0.8, "metadata": {}},
-        {"content": "Scholarship eligibility requirements", "score": 0.6, "metadata": {}},
-        {"content": "Library study room booking guide", "score": 0.5, "metadata": {}},
+        {"content": "Chính sách trả hàng và hoàn tiền Shopee trong 15 ngày", "score": 0.8, "metadata": {}},
+        {"content": "Các phương thức thanh toán hỗ trợ trên Shopee Vietnam", "score": 0.6, "metadata": {}},
+        {"content": "Quy định đăng bán sản phẩm dành cho người bán", "score": 0.5, "metadata": {}},
     ]
-    results = rerank("tuition fee payment", dummy_candidates, top_k=2)
+    results = rerank("chính sách trả hàng shopee", dummy_candidates, top_k=2)
     for r in results:
         print(f"[{r['score']:.3f}] {r['content']}")

@@ -59,6 +59,6 @@ def semantic_search(query: str, top_k: int = 10) -> list[dict]:
 
 if __name__ == "__main__":
     # Test
-    results = semantic_search("what is the tuition fee", top_k=5)
+    results = semantic_search("quy định trả hàng hoàn tiền shopee", top_k=5)
     for r in results:
         print(f"[{r['score']:.3f}] {r['content'][:100]}...")

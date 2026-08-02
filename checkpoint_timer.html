@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Pipeline Lab — Checkpoint Timer & Detailed Role Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #131b2e;
+      --bg-card-hover: #1c2742;
+      --bg-inner: #0b1220;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.4);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.4);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #23314d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      line-height: 1.45;
+    }
+
+    /* HEADER & STEPPER */
+    header {
+      background: rgba(19, 27, 46, 0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      font-size: 26px;
+    }
+    .brand-title {
+      font-weight: 800;
+      font-size: 15px;
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Stepper Bar */
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      max-width: 720px;
+      justify-content: center;
+    }
+    .step-btn {
+      background: #111827;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .step-btn:hover {
+      background: var(--bg-card-hover);
+      color: #fff;
+    }
+    .step-btn.active {
+      background: var(--primary);
+      border-color: #60a5fa;
+      color: #fff;
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+    .step-btn.completed {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Team Switcher */
+    .team-switch {
+      display: flex;
+      background: #0b1220;
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+    .team-opt {
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .team-opt.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    /* MAIN DASHBOARD GRID */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 14px;
+      padding: 14px;
+      height: calc(100vh - 54px);
+    }
+
+    /* LEFT PANEL: TIMER & CONTROLS */
+    .timer-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .cp-header {
+      text-align: center;
+      width: 100%;
+    }
+    .cp-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      margin-bottom: 6px;
+    }
+    .cp-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    /* Clock */
+    .clock-box {
+      text-align: center;
+      background: var(--bg-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .clock-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 54px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -1px;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+    }
+    .clock-display.warning { color: var(--warning); animation: pulse 1s infinite; }
+    .clock-display.danger { color: var(--danger); animation: pulse 0.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .edit-time-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .edit-time-box input {
+      width: 55px;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 3px 6px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* Buttons */
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 14px var(--primary-glow); }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: #23314d; color: var(--text-main); }
+    .btn-secondary:hover { background: #334155; }
+
+    .nav-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .btn-nav {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 7px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-nav:hover { color: #fff; border-color: #64748b; }
+
+    /* Pass & Command Box */
+    .pass-card {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #a7f3d0;
+    }
+    .pass-title {
+      font-weight: 800;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .cmd-card {
+      background: var(--bg-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .cmd-title {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #38bdf8;
+      margin-bottom: 5px;
+    }
+    .cmd-box {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #7dd3fc;
+      background: #060a12;
+      padding: 6px 8px;
+      border-radius: 6px;
+      word-break: break-all;
+      border: 1px solid #1e293b;
+    }
+
+    /* RIGHT PANEL: FULL SCREEN ROLE GUIDE */
+    .guide-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .guide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    .guide-title {
+      font-weight: 800;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .guide-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    /* Dynamic Grid Layout */
+    .roles-grid {
+      display: grid;
+      gap: 12px;
+      flex: 1;
+    }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+    .grid-5 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
+    .grid-6 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
+
+    /* DETAILED ROLE CARD */
+    .role-card {
+      background: var(--bg-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .role-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.15);
+    }
+
+    .role-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 6px;
+    }
+    .role-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+    .badge-r1 { background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-r2 { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-r3 { background: rgba(168, 85, 247, 0.25); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-r4 { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-r5 { background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-r6 { background: rgba(236, 72, 153, 0.25); color: #fbcfe8; border: 1px solid rgba(236, 72, 153, 0.4); }
+
+    .role-name {
+      font-weight: 800;
+      font-size: 12px;
+      color: #fff;
+    }
+
+    /* Multi-step details */
+    .role-section-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .role-goal {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      background: rgba(255,255,255,0.03);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .steps-list li {
+      font-size: 11px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    .step-num {
+      font-weight: 700;
+      color: #60a5fa;
+      font-size: 10px;
+      min-width: 14px;
+    }
+
+    /* File location */
+    .file-loc {
+      background: #070b14;
+      border: 1px dashed #334155;
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .file-loc-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-loc-tag {
+      font-size: 9px;
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+    }
+
+    /* Pro tip / Gotcha */
+    .gotcha-box {
+      font-size: 10px;
+      color: #fde68a;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    /* Footer shortcuts */
+    .shortcuts {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      border-top: 1px solid var(--border-color);
+      padding-top: 8px;
+    }
+    kbd {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <span class="brand-icon">🎓</span>
+      <div>
+        <div class="brand-title">RAG PIPELINE LAB DASHBOARD</div>
+        <div class="brand-sub">Ngày 8 — Hybrid Retrieval, Vectorless Fallback & Citation</div>
+      </div>
+    </div>
+
+    <!-- Stepper Buttons -->
+    <div class="stepper" id="stepper">
+      <!-- Generated by JS -->
+    </div>
+
+    <!-- Team Size Switcher -->
+    <div class="team-switch">
+      <div class="team-opt active" onclick="setTeamSize(4)">Nhóm 4</div>
+      <div class="team-opt" onclick="setTeamSize(5)">Nhóm 5</div>
+      <div class="team-opt" onclick="setTeamSize(6)">Nhóm 6</div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+    <!-- LEFT PANEL: TIMER & CONTROLS -->
+    <div class="timer-panel">
+      <div class="cp-header">
+        <span class="cp-badge" id="cp-badge">CHECKPOINT 0</span>
+        <div class="cp-title" id="cp-title">Setup Môi Trường & Project</div>
+      </div>
+
+      <!-- Clock Display -->
+      <div class="clock-box">
+        <div class="clock-display" id="clock">15:00</div>
+        <div class="edit-time-box">
+          <span>Thời gian (phút):</span>
+          <input type="number" id="time-input" value="15" min="1" max="180" onchange="updateCustomTime()">
+        </div>
+      </div>
+
+      <!-- Timer Controls -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="timer-controls">
+          <button class="btn btn-primary" id="btn-toggle" onclick="toggleTimer()">
+            <span>▶</span> <span id="btn-toggle-text">BẮT ĐẦU</span>
+          </button>
+          <button class="btn btn-secondary" onclick="resetTimer()">
+            <span>↺</span> Reset
+          </button>
+        </div>
+
+        <div class="nav-controls">
+          <button class="btn-nav" onclick="prevCP()">← Checkpoint trước</button>
+          <button class="btn-nav" onclick="nextCP()">Checkpoint tiếp →</button>
+        </div>
+      </div>
+
+      <!-- Quick Command Bar -->
+      <div class="cmd-card">
+        <div class="cmd-title">⚡ Lệnh Terminal Nhanh (CP hiện tại)</div>
+        <div class="cmd-box" id="cp-cmd">python -m venv .venv; pip install -r requirements.txt</div>
+      </div>
+
+      <!-- Pass Criteria Card -->
+      <div class="pass-card">
+        <div class="pass-title">✓ Tiêu chí hoàn thành (Pass Criteria)</div>
+        <div id="cp-pass">Tất cả thành viên khởi tạo venv, cài xong requirements.txt và import thư viện (chromadb, ragas) thành công không lỗi.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: DETAILED ROLE GUIDE -->
+    <div class="guide-panel">
+      <div class="guide-header">
+        <div class="guide-title">
+          <span>📋 Phân Công Chi Tiết & File Xử Lý Cho Từng Role</span>
+        </div>
+        <div class="guide-sub" id="team-info-label">Đang chọn: Nhóm 4 người</div>
+      </div>
+
+      <!-- Role Cards Container Grid -->
+      <div class="roles-grid grid-4" id="roles-container">
+        <!-- Rendered dynamically by JS -->
+      </div>
+
+      <div class="shortcuts">
+        <span><kbd>Space</kbd> Chạy / Tạm dừng</span>
+        <span><kbd>→</kbd> Checkpoint tiếp</span>
+        <span><kbd>←</kbd> Checkpoint trước</span>
+        <span><kbd>R</kbd> Reset thời gian</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // FULL DETAILED CHECKPOINTS DATA
+    const CHECKPOINTS = [
+      {
+        id: 0,
+        badge: "CHECKPOINT 0",
+        title: "Setup Môi Trường & Khởi Tạo Project",
+        durationMinutes: 10,
+        quickCmd: "python -m venv .venv; .venv\\Scripts\\Activate.ps1; pip install -r requirements.txt",
+        passCriteria: "Tất cả các thành viên khởi tạo xong venv, cài đầy đủ requirements.txt và test import thành công. (Cuối CP: Coach gọi ngẫu nhiên 1-2 nhóm demo setup 5 phút).",
+        roles: {
+          4: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Cấp .env & Quản lý repository nhóm",
+              steps: ["Clone repo starter về máy local", "Tạo file .env từ file .env.example", "Điền OPENROUTER_API_KEY (miễn phí)", "Khởi tạo repo chung push lên GitHub"],
+              file: ".env.example -> .env", gotcha: "Lưu ý đặt đúng tên file là .env (phải có dấu chấm ở đầu)."
+            },
+            {
+              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
+              goal: "Khởi tạo venv & cài đặt gói phụ thuộc",
+              steps: ["Chạy python -m venv .venv", "Kích hoạt môi trường ảo (virtualenv)", "Chạy pip install -r requirements.txt", "Tải Chromium: playwright install chromium"],
+              file: "requirements.txt", gotcha: "Nhớ kích hoạt venv trước khi pip install."
+            },
+            {
+              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
+              goal: "Thử nghiệm giao diện Streamlit mẫu",
+              steps: ["Mở file app.py kiểm tra khung UI", "Chạy lệnh streamlit run app.py", "Xác nhận browser mở trang local 8501", "Kiểm tra hiển thị nút bấm gợi ý câu hỏi"],
+              file: "app.py", gotcha: "Nếu port 8501 bị trùng, Streamlit tự nhảy 8502."
+            },
+            {
+              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
+              goal: "Kiểm tra thư viện RAGAS & Pytest",
+              steps: ["Chạy python -c 'import ragas, chromadb'", "Chạy thử lệnh pytest --version", "Kiểm tra thư mục group_project/evaluation/", "Đảm bảo không bị thiếu package eval"],
+              file: "group_project/evaluation/", gotcha: "Windows bị mã hoá console thì set $env:PYTHONIOENCODING='utf-8'."
+            }
+          ],
+          5: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Khởi tạo project nhóm & cấp API key",
+              steps: ["Clone starter repo & đẩy lên GitHub nhóm", "Tạo file .env và điền OPENROUTER_API_KEY", "Phân chia quyền truy cập repo cho 5 người"],
+              file: ".env", gotcha: "Chia sẻ API key an toàn qua nhóm chat."
+            },
+            {
+              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
+              goal: "Setup venv & test import ChromaDB",
+              steps: ["Khởi tạo môi trường venv", "Cài đặt requirements.txt", "Chạy python -c 'import chromadb'"],
+              file: "requirements.txt", gotcha: "Cần Python 3.10+ (khuyên dùng 3.11)."
+            },
+            {
+              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
+              goal: "Test import rank-bm25 & scikit-learn",
+              steps: ["Cài đặt các thư viện lexical search", "Chạy python -c 'import rank_bm25, sklearn'"],
+              file: "src/task6_lexical_search.py", gotcha: "BM25Okapi yêu cầu tokenize danh sách từ."
+            },
+            {
+              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
+              goal: "Chạy thử ứng dụng Streamlit UI",
+              steps: ["Kiểm tra file app.py starter mẫu", "Thực thi lệnh streamlit run app.py"],
+              file: "app.py", gotcha: "Đảm bảo giao diện hiển thị sidebar."
+            },
+            {
+              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
+              goal: "Test môi trường đánh giá RAGAS",
+              steps: ["Chạy python -c 'import ragas, datasets'", "Kiểm tra cấu trúc file golden_dataset.json"],
+              file: "group_project/evaluation/", gotcha: "RAGAS cần OpenAI API key hoặc OpenRouter."
+            }
+          ],
+          6: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Thiết lập dự án & phân quyền nhóm 6 người",
+              steps: ["Clone repo & khởi tạo GitHub nhóm", "Cấu hình .env đầy đủ các API keys"],
+              file: ".env", gotcha: "Đảm bảo 6 thành viên dùng chung config."
+            },
+            {
+              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
+              goal: "Cài đặt gói Crawl4AI & MarkItDown",
+              steps: ["Cài markitdown[pdf] và crawl4ai", "Chạy playwright install chromium"],
+              file: "requirements.txt", gotcha: "Quên playwright install sẽ không crawl được."
+            },
+            {
+              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
+              goal: "Test load model sentence_transformers",
+              steps: ["Chạy test import sentence_transformers", "Xác nhận GPU/CPU device embedding"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Lần đầu tải BAAI/bge-m3 mất 1-2 phút."
+            },
+            {
+              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
+              goal: "Test thư viện BM25Okapi & TF-IDF",
+              steps: ["Kiểm tra gói rank-bm25 và sklearn", "Test hàm tokenize tiếng Việt đơn giản"],
+              file: "src/task6_lexical_search.py", gotcha: "Tách từ tiếng Việt đơn giản bằng split()."
+            },
+            {
+              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
+              goal: "Chạy thử Streamlit app.py mẫu",
+              steps: ["Thực thi streamlit run app.py", "Kiểm tra khung chat và nút gợi ý"],
+              file: "app.py", gotcha: "Streamlit tự bật trên trình duyệt mặc định."
+            },
+            {
+              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
+              goal: "Test framework đánh giá RAGAS & Pytest",
+              steps: ["Chạy pytest --version", "Kiểm tra import ragas.metrics"],
+              file: "group_project/evaluation/", gotcha: "RAGAS dùng 4 metrics chính."
+            }
+          ]
+        }
+      },
+      {
+        id: 1,
+        badge: "CHECKPOINT 1",
+        title: "Thu Thập & Chuẩn Hoá Dữ Liệu (Task 1–3)",
+        durationMinutes: 15,
+        quickCmd: "python src/task1_collect_legal_docs.py; python src/task2_crawl_news.py; python src/task3_convert_markdown.py",
+        passCriteria: "Đủ >=3 file PDF/DOCX trong data/landing/legal/, >=5 file tin tức trong news/ và đã convert sang .md. (Cuối CP: Gọi ngẫu nhiên demo file .md & chia sẻ kinh nghiệm 5 phút).",
+        roles: {
+          4: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Phân chia URL & kiểm tra dữ liệu sau convert",
+              steps: ["Phân công danh mục URL tránh trùng file", "Rà soát file .md sinh ra trong standardized/", "Đảm bảo file .md có nội dung (>500 bytes)"],
+              file: "data/landing/ -> data/standardized/", gotcha: "Nếu trang bị 403 Cloudflare -> dùng data mẫu có sẵn."
+            },
+            {
+              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
+              goal: "Task 1 — Tải >=3 file PDF/DOCX quy định gốc",
+              steps: ["Tìm văn bản chính sách (Học phí, Đổi trả...)", "Đặt tên file không dấu rõ ràng", "Hoàn thành hàm download_file() trong task1", "Lưu file vào data/landing/legal/"],
+              file: "src/task1_collect_legal_docs.py", gotcha: "Đặt tên file rõ ràng: tuition-fees.pdf."
+            },
+            {
+              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
+              goal: "Task 2 — Crawl >=5 bài tin tức/thông báo",
+              steps: ["Dùng Crawl4AI hoặc requests crawl bài viết", "Lưu mỗi bài thành 1 file .json chứa metadata", "Ghi rõ url, title, crawl_date, content", "Lưu file vào data/landing/news/"],
+              file: "src/task2_crawl_news.py", gotcha: "Mỗi bài báo lưu thành 1 file JSON chứa metadata."
+            },
+            {
+              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
+              goal: "Task 3 — Convert toàn bộ sang Markdown",
+              steps: ["Dùng MarkItDown convert PDF/DOCX/JSON", "Lưu file .md vào data/standardized/legal/ & news/", "Chạy pytest tests/test_individual.py test Task 1-3"],
+              file: "src/task3_convert_markdown.py", gotcha: "Thiếu extra PDF báo MissingDependencyException."
+            }
+          ],
+          5: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Điều phối thu thập & rà soát dữ liệu Markdown",
+              steps: ["Phân chia các trang web chính thức cần crawl", "Kiểm tra cây thư mục data/standardized/"],
+              file: "data/standardized/", gotcha: "Đảm bảo đủ 2 subfolder legal và news."
+            },
+            {
+              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
+              goal: "Task 1 — Thu thập văn bản chính sách PDF",
+              steps: ["Tải 3+ file PDF/DOCX chính sách", "Chạy task1_collect_legal_docs.py"],
+              file: "src/task1_collect_legal_docs.py", gotcha: "File PDF phải >1KB."
+            },
+            {
+              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
+              goal: "Task 2 — Crawl 5+ bài viết tin tức/thông báo",
+              steps: ["Chạy task2_crawl_news.py dùng Crawl4AI", "Kiểm tra output JSON trong news/"],
+              file: "src/task2_crawl_news.py", gotcha: "Lưu đủ metadata URL và ngày crawl."
+            },
+            {
+              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
+              goal: "Hỗ trợ rà soát cấu trúc thư mục data/",
+              steps: ["Kiểm tra các file nằm đúng thư mục landing/", "Đảm bảo các file không bị rỗng 0-byte"],
+              file: "data/landing/", gotcha: "File 0-byte làm task3 bị crash."
+            },
+            {
+              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
+              goal: "Task 3 — Convert toàn bộ sang Markdown",
+              steps: ["Chạy task3_convert_markdown.py", "Chạy pytest tests/test_individual.py Task 1-3"],
+              file: "src/task3_convert_markdown.py", gotcha: "Cài pip install markitdown[pdf]."
+            }
+          ],
+          6: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Phân công nguồn crawl dữ liệu nhóm 6 người",
+              steps: ["Chia 3 nguồn PDF chính sách & 5 nguồn tin tức", "Kiểm tra tính nhất quán dữ liệu"],
+              file: "data/", gotcha: "Tránh nộp lặp lại 1 bài báo nhiều lần."
+            },
+            {
+              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
+              goal: "Task 1 — Tải văn bản quy định pháp lý PDF",
+              steps: ["Tải >=3 file PDF/DOCX vào legal/", "Hoàn thành script tự động tải nếu có URL"],
+              file: "src/task1_collect_legal_docs.py", gotcha: "Kiểm tra dung lượng file."
+            },
+            {
+              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
+              goal: "Task 2 — Crawl tin tức dịch vụ/hướng dẫn",
+              steps: ["Crawl 5+ bài tin tức bằng Crawl4AI", "Lưu file JSON chứa full text và metadata"],
+              file: "src/task2_crawl_news.py", gotcha: "Chạy playwright install chromium."
+            },
+            {
+              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
+              goal: "Task 3 — Chuyển đổi dữ liệu sang Markdown",
+              steps: ["Thực thi task3_convert_markdown.py", "Xác nhận file .md xuất hiện trong standardized/"],
+              file: "src/task3_convert_markdown.py", gotcha: "Giữ nguyên cấu trúc thư mục."
+            },
+            {
+              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
+              goal: "Đọc thử các file Markdown sau convert",
+              steps: ["Mở thử 1 file .md kiểm tra chất lượng chữ", "Đảm bảo không bị mất đoạn text tiếng Việt"],
+              file: "data/standardized/", gotcha: "UTF-8 encoding bắt buộc."
+            },
+            {
+              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
+              goal: "Chạy test tự động cho Task 1, 2, 3",
+              steps: ["Chạy pytest tests/test_individual.py -k Task1", "Chạy test cho Task2 và Task3"],
+              file: "tests/test_individual.py", gotcha: "Xác nhận 100% test Task 1-3 PASSED."
+            }
+          ]
+        }
+      },
+      {
+        id: 2,
+        badge: "CHECKPOINT 2",
+        title: "Chunking, Indexing & Search Cơ Bản (Task 4–6)",
+        durationMinutes: 25,
+        quickCmd: "python src/task4_chunking_indexing.py; python src/task5_semantic_search.py; python src/task6_lexical_search.py",
+        passCriteria: "Thư mục chroma_db/ sinh ra dữ liệu; pytest Task 4-6 PASSED. (Cuối CP: Demo ngẫu nhiên so sánh Semantic vs BM25 5 phút).",
+        roles: {
+          4: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Duyệt config chunking & collection ChromaDB",
+              steps: ["Xác nhận CHUNK_SIZE=800, CHUNK_OVERLAP=100", "Đảm bảo COLLECTION_NAME đồng bộ domain", "Xác nhận embedding model BAAI/bge-m3 (1024 dim)"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Đổi corpus phải xoá thư mục chroma_db cũ."
+            },
+            {
+              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
+              goal: "Task 4 — Chunking & Indexing vào ChromaDB",
+              steps: ["Đọc file .md từ data/standardized/", "Dùng RecursiveCharacterTextSplitter chia nhỏ", "Embed chunks bằng SentenceTransformer BAAI/bge-m3", "Upsert chunks + embeddings vào ChromaDB persistent"],
+              file: "src/task4_chunking_indexing.py -> chroma_db/", gotcha: "ChromaDB cosine distance: score = 1.0 - distance."
+            },
+            {
+              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
+              goal: "Task 5 — Semantic Search & HyDE",
+              steps: ["Hoàn thành hàm semantic_search() dùng Cosine", "Viết _generate_hypothetical_doc() cho HyDE", "Embed hypothetical doc thay vì query gốc", "Trả về top_k kết quả sorted score desc"],
+              file: "src/task5_semantic_search.py", gotcha: "HyDE cải thiện recall ~10-15% với query ngắn."
+            },
+            {
+              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
+              goal: "Task 6 — Lexical Search (BM25 & TF-IDF)",
+              steps: ["Tokenize văn bản tiếng Việt đơn giản", "Tạo BM25 index bằng BM25Okapi", "Tạo TF-IDF index bằng TfidfVectorizer", "Chạy pytest tests/test_individual.py Task 4-6"],
+              file: "src/task6_lexical_search.py", gotcha: "BM25 xử lý document dài ngắn không đều tốt hơn TF-IDF."
+            }
+          ],
+          5: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Duyệt tham số Vector DB & Embedding Model",
+              steps: ["Kiểm tra model BAAI/bge-m3", "Đảm bảo collection name hợp lệ"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Xóa database cũ nếu đổi corpus."
+            },
+            {
+              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
+              goal: "Task 4 — Chunking & Indexing ChromaDB",
+              steps: ["Hoàn thành load_documents() & chunk_documents()", "Lưu index vào chroma_db/"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Overlap 100 giữ ranh giới câu."
+            },
+            {
+              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
+              goal: "Task 5 — Semantic Search & HyDE module",
+              steps: ["Viết hàm semantic_search()", "Tích hợp HyDE hypothetical document"],
+              file: "src/task5_semantic_search.py", gotcha: "Score = max(0.0, 1.0 - distance)."
+            },
+            {
+              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
+              goal: "Task 6 — Lexical Search BM25 module",
+              steps: ["Tạo chỉ mục BM25Okapi từ corpus", "Trả về kết quả lexical search"],
+              file: "src/task6_lexical_search.py", gotcha: "Tokenize split theo khoảng trắng."
+            },
+            {
+              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
+              goal: "Chạy test tự động Task 4, 5, 6",
+              steps: ["Chạy pytest tests/test_individual.py", "Verify 100% test Task 4-6 PASSED"],
+              file: "tests/test_individual.py", gotcha: "Kiểm tra kết quả sorted descending."
+            }
+          ],
+          6: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Kiểm tra tiến độ Indexing & Search nhóm 6 người",
+              steps: ["Đảm bảo 6 người dùng chung 1 cấu hình vector DB", "Kiểm tra số lượng chunks đã index"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Xác nhận collection.count() > 0."
+            },
+            {
+              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
+              goal: "Hỗ trợ load documents từ standardized/",
+              steps: ["Rà soát metadata source & doc_type", "Đảm bảo mỗi chunk có đủ metadata"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Metadata bắt buộc chứa source."
+            },
+            {
+              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
+              goal: "Task 4 — Chunking & Indexing ChromaDB",
+              steps: ["Thực thi run_pipeline() trong task4", "Lưu trữ persistent database vào chroma_db/"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Upsert theo batch 100 chunks."
+            },
+            {
+              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
+              goal: "Task 5 — Semantic Search & HyDE Search",
+              steps: ["Viết hàm hyde_search() và semantic_search()", "Test tìm kiếm câu hỏi tự nhiên"],
+              file: "src/task5_semantic_search.py", gotcha: "Sắp xếp score giảm dần."
+            },
+            {
+              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
+              goal: "Task 6 — BM25 & TF-IDF Search Module",
+              steps: ["Hoàn thành lexical_search() và tfidf_search()", "So sánh độ chính xác từ khoá"],
+              file: "src/task6_lexical_search.py", gotcha: "BM25 có term saturation k1=1.5."
+            },
+            {
+              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
+              goal: "Chạy Pytest kiểm thử toàn bộ Task 4-6",
+              steps: ["Thực thi pytest tests/test_individual.py", "Đảm bảo không bị ném NotImplementedError"],
+              file: "tests/test_individual.py", gotcha: "Kiểm tra top_k kết quả trả về."
+            }
+          ]
+        }
+      },
+      {
+        id: 3,
+        badge: "CHECKPOINT 3",
+        title: "Reranking & PageIndex Fallback (Task 7–8)",
+        durationMinutes: 15,
+        quickCmd: "python src/task7_reranking.py; python src/task8_pageindex_vectorless.py",
+        passCriteria: "RRF Rerank gộp kết quả Semantic + BM25; PageIndex fallback hoạt động. (Cuối CP: Trình bày RRF logic & trigger Fallback 5 phút).",
+        roles: {
+          4: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Duyệt công thức RRF & smoothing constant k=60",
+              steps: ["Kiểm tra công thức RRF(d) = sum(1 / (k + rank))", "Xác nhận k=60 từ paper Cormack et al. 2009", "Đảm bảo gộp kết quả công bằng giữa các ranker"],
+              file: "src/task7_reranking.py", gotcha: "RRF không cần API key, chạy hoàn toàn local."
+            },
+            {
+              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
+              goal: "Task 7 — Viết thuật toán RRF Reranking",
+              steps: ["Nhận danh sách ranked_lists từ Semantic & BM25", "Tính điểm cộng dồn RRF cho từng chunk", "Sort kết quả theo điểm RRF giảm dần", "Làm tròn điểm 6 chữ số thập phân"],
+              file: "src/task7_reranking.py", gotcha: "Tùy chọn Cross-encoder Jina API nếu có key."
+            },
+            {
+              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
+              goal: "Task 8 — Tích hợp PageIndex Vectorless RAG",
+              steps: ["Đọc PAGEINDEX_API_KEY từ .env", "Convert Markdown sang PDF tạm bằng fpdf2", "Upload PDF lên PageIndex: client.submit_document()", "Poll get_retrieval() cho tới khi status completed"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "Cache doc_ids vào pageindex_doc_ids.json."
+            },
+            {
+              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
+              goal: "Test thử câu hỏi ngoài domain để verify fallback",
+              steps: ["Thử câu hỏi rác (vd: xyzabc123)", "Kiểm tra output fallback trả về source='pageindex'", "Chạy pytest tests/test_individual.py Task 7-8"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "PageIndex đọc tài liệu theo mục lục/tiêu đề."
+            }
+          ],
+          5: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Rà soát logic RRF Rerank & PageIndex",
+              steps: ["Xác nhận logic RRF fusion hoạt động tốt", "Đảm bảo cache doc_ids không bị nộp đè"],
+              file: "src/task7_reranking.py", gotcha: "RRF gộp top-k từ 2 bảng xếp hạng."
+            },
+            {
+              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
+              goal: "Task 7 — Viết hàm rerank_rrf()",
+              steps: ["Tính điểm RRF: 1.0 / (60 + rank)", "Trả về list top_k candidates"],
+              file: "src/task7_reranking.py", gotcha: "Rank bắt đầu từ 1."
+            },
+            {
+              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
+              goal: "Task 7 (mở rộng) — Cross-encoder Jina Reranker",
+              steps: ["Tích hợp Jina Reranker API nếu có key", "Fallback về RRF nếu không có JINA_API_KEY"],
+              file: "src/task7_reranking.py", gotcha: "Jina Reranker multilingual tốt tiếng Việt."
+            },
+            {
+              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
+              goal: "Task 8 — Tích hợp PageIndex SDK vectorless",
+              steps: ["Viết hàm pageindex_search()", "Lưu cache doc_ids vào JSON file"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "Poll interval 2 giây, timeout 60 giây."
+            },
+            {
+              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
+              goal: "Chạy Pytest kiểm thử Task 7 và Task 8",
+              steps: ["Chạy pytest tests/test_individual.py -k Task7", "Chạy test Task 8"],
+              file: "tests/test_individual.py", gotcha: "Xác nhận 100% test Task 7-8 PASSED."
+            }
+          ],
+          6: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Kiểm tra tích hợp RRF & PageIndex nhóm 6 người",
+              steps: ["Đảm bảo 6 người dùng chung công thức RRF", "Rà soát file cache pageindex_doc_ids.json"],
+              file: "src/task7_reranking.py", gotcha: "Không upload lại PDF nếu đã cached."
+            },
+            {
+              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
+              goal: "Hỗ trợ convert Markdown sang PDF cho PageIndex",
+              steps: ["Dùng fpdf2 tạo PDF từ file .md", "Đảm bảo encode latin-1 safe charmap"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "fpdf2 không ném lỗi unicode khi strip char."
+            },
+            {
+              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
+              goal: "Task 7 — Viết thuật toán RRF Reranking",
+              steps: ["Tính toán rrf_scores từ dense + sparse", "Return candidates sorted by rrf_score"],
+              file: "src/task7_reranking.py", gotcha: "RRF score nằm trong khoảng ~0.01 - 0.03."
+            },
+            {
+              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
+              goal: "Task 8 — Tích hợp SDK PageIndex",
+              steps: ["Khởi tạo PageIndexClient(api_key)", "Submit query & poll retrieval response"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "Yêu cầu PAGEINDEX_API_KEY trong .env."
+            },
+            {
+              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
+              goal: "Kiểm tra output format của PageIndex",
+              steps: ["Đảm bảo output chứa 'content', 'score', 'source'", "Đánh dấu source='pageindex'"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "Format output thống nhất với RAG."
+            },
+            {
+              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
+              goal: "Đo thời gian phản hồi (latency) RRF vs PageIndex",
+              steps: ["Đo thời gian chạy RRF (~10ms)", "Đo thời gian chạy PageIndex (~2-5s)"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "PageIndex tốn latency hơn do gọi API."
+            }
+          ]
+        }
+      },
+      {
+        id: 4,
+        badge: "CHECKPOINT 4",
+        title: "Pipeline Hoàn Chỉnh & Generation (Task 9–10)",
+        durationMinutes: 25,
+        quickCmd: "python src/task9_retrieval_pipeline.py; python src/task10_generation.py; python -m pytest tests/test_individual.py -v",
+        passCriteria: "Chạy pytest tests/test_individual.py đạt 35/35 TEST PASSED (Hoàn thành 50đ cá nhân). (Cuối CP: Coach chốt 50đ cá nhân & gỡ lỗi 10 phút).",
+        roles: {
+          4: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Duyệt 50/50 điểm bài cá nhân của toàn nhóm",
+              steps: ["Chạy pytest tests/test_individual.py -v", "Xác nhận màn hình hiển thị 35 passed", "Duyệt code sẵn sàng chuyển sang bài tập nhóm"],
+              file: "tests/test_individual.py", gotcha: "Mốc quan trọng nhất của bài lab cá nhân!"
+            },
+            {
+              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
+              goal: "Task 9 — Nối chuỗi Retrieval & Fallback logic",
+              steps: ["Chạy Semantic + Lexical song song", "Gộp thứ hạng bằng RRF Rerank", "Kiểm tra điểm Cosine gốc dense_results[0]['score']", "Nếu < 0.48 -> Fallback sang PageIndex search"],
+              file: "src/task9_retrieval_pipeline.py", gotcha: "BẪY: So nhầm điểm RRF (luôn ~0.016) thay vì Cosine gốc!"
+            },
+            {
+              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
+              goal: "Task 10 — Reordering & LLM Generation có Citation",
+              steps: ["Xếp lại thứ tự chunks tránh lost-in-the-middle: front + back[::-1]", "Gắn nhãn source cho từng chunk trong context", "Gọi OpenRouter (inclusionai/ling-3.0-flash:free)", "SYSTEM_PROMPT yêu cầu bắt buộc trích dẫn [Source]"],
+              file: "src/task10_generation.py", gotcha: "Liu et al. 2023: LLM chỉ nhớ đầu & cuối, quên giữa."
+            },
+            {
+              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
+              goal: "Rà soát định dạng trích dẫn & fallback response",
+              steps: ["Kiểm tra câu trả lời có chứa nhãn trích dẫn [Source]", "Xác nhận nếu không đủ context LLM trả lời từ chối bịa đặt", "Chạy pytest toàn bộ 35 bài test"],
+              file: "src/task10_generation.py", gotcha: "Temperature=0.3 cho factual accuracy."
+            }
+          ],
+          5: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Xác nhận 35/35 test passed cho cả 5 thành viên",
+              steps: ["Chạy pytest tests/test_individual.py -v", "Xác nhận 100% test passed"],
+              file: "tests/test_individual.py", gotcha: "Hoàn tất 50 điểm bài cá nhân."
+            },
+            {
+              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
+              goal: "Task 9 — Nối Semantic + BM25 + RRF",
+              steps: ["Hoàn thành hàm retrieve()", "Đánh dấu item['source'] = 'hybrid'"],
+              file: "src/task9_retrieval_pipeline.py", gotcha: "Fetch top_k * 3 candidates để rerank."
+            },
+            {
+              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
+              goal: "Task 9 — Tinh chỉnh ngưỡng Fallback (SCORE_THRESHOLD=0.48)",
+              steps: ["Lấy dense_results[0]['score'] so sánh với 0.48", "Kích hoạt pageindex_search nếu score kém"],
+              file: "src/task9_retrieval_pipeline.py", gotcha: "0.48 nằm giữa query đúng & query rác."
+            },
+            {
+              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
+              goal: "Task 10 — Reordering & LLM Citation Generation",
+              steps: ["Viết reorder_for_llm() & format_context()", "Gọi OpenRouter LLM sinh câu trả lời"],
+              file: "src/task10_generation.py", gotcha: "Temperature=0.3, Top_P=0.9."
+            },
+            {
+              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
+              goal: "Kiểm tra chất lượng câu trả lời & citation tags",
+              steps: ["Test thử 5 câu hỏi có trong corpus", "Đảm bảo câu trả lời chứa citation đúng"],
+              file: "src/task10_generation.py", gotcha: "Citation định dạng [Source Name, Year]."
+            }
+          ],
+          6: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Chốt 50 điểm bài cá nhân cho nhóm 6 người",
+              steps: ["Chạy pytest kiểm tra 35/35 passed", "Duyệt chuyển sang làm bài tập nhóm"],
+              file: "tests/test_individual.py", gotcha: "Đảm bảo cả 6 máy đều pass test."
+            },
+            {
+              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
+              goal: "Rà soát dữ liệu chuẩn bị cho bài nhóm",
+              steps: ["Kiểm tra toàn bộ file Markdown đã index đủ", "Xác nhận không bị thiếu tài liệu quan trọng"],
+              file: "data/standardized/", gotcha: "Dữ liệu đủ giúp RAGAS score cao."
+            },
+            {
+              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
+              goal: "Task 9 — Nối chuỗi Retrieval Pipeline",
+              steps: ["Gọi semantic_search và lexical_search", "Gộp thứ hạng bằng rerank_rrf"],
+              file: "src/task9_retrieval_pipeline.py", gotcha: "Sử dụng hyde_search nếu enabled."
+            },
+            {
+              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
+              goal: "Task 9 — Kiểm tra logic Fallback PageIndex",
+              steps: ["Kiểm tra best_score từ Cosine gốc", "Gọi pageindex_search khi best_score < 0.48"],
+              file: "src/task9_retrieval_pipeline.py", gotcha: "Bắt try/except nếu PageIndex failed."
+            },
+            {
+              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
+              goal: "Task 10 — Document Reordering & LLM Generation",
+              steps: ["Thực thi reorder_for_llm()", "Gửi prompt tới OpenRouter sinh câu trả lời"],
+              file: "src/task10_generation.py", gotcha: "Model inclusionai/ling-3.0-flash:free."
+            },
+            {
+              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
+              goal: "Chạy Pytest kiểm thử toàn bộ 35 bài test",
+              steps: ["Thực thi pytest tests/test_individual.py -v", "Xác nhận 35 PASSED 100%"],
+              file: "tests/test_individual.py", gotcha: "Mốc quan trọng nhất trước khi làm app."
+            }
+          ]
+        }
+      },
+      {
+        id: 5,
+        badge: "CHECKPOINT 5",
+        title: "Bài Tập Nhóm — Chatbot UI & Đánh Giá RAGAS",
+        durationMinutes: 30,
+        quickCmd: "streamlit run app.py; python -m group_project.evaluation.eval_pipeline",
+        passCriteria: "Chatbot Streamlit app.py chạy mượt kèm trích dẫn; file group_project/evaluation/results.md hiển thị bảng điểm RAGAS A/B testing. (Cuối CP: Rà soát live app 10 phút).",
+        roles: {
+          4: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Ghép mã nguồn bài cá nhân tốt nhất vào app.py",
+              steps: ["Chọn bản code Task 9-10 tốt nhất của nhóm", "Tích hợp vào app.py và group_project/", "Giám sát tiến độ làm báo cáo evaluation"],
+              file: "app.py | group_project/", gotcha: "Yêu cầu hoàn thành ngay trong buổi học."
+            },
+            {
+              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
+              goal: "Nối hàm generate_with_citation() vào app.py",
+              steps: ["Import generate_with_citation từ src.task10_generation", "Gọi hàm khi user nhập câu hỏi trong Streamlit", "Trả về answer và danh sách sources cho UI"],
+              file: "app.py", gotcha: "Chèn cache @st.cache_resource nếu cần."
+            },
+            {
+              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
+              goal: "Hoàn thiện giao diện Streamlit Chatbot UI",
+              steps: ["Tạo Sidebar chứa slider top_k & gợi ý câu hỏi", "Thiết kế chat history bằng st.chat_message", "Thêm st.expander hiển thị nguồn tham khảo kèm score"],
+              file: "app.py", gotcha: "Streamlit UI đẹp giúp tăng điểm demo nhóm."
+            },
+            {
+              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
+              goal: "Tạo golden_dataset.json & chạy RAGAS eval",
+              steps: ["Viết 15 cặp Q&A + expected_context vào golden_dataset.json", "Chạy python -m group_project.evaluation.eval_pipeline", "Thu thập điểm 4 metrics (Faithfulness, Relevancy, Recall, Precision)", "Viết kết quả so sánh A/B (Hybrid vs Dense) vào results.md"],
+              file: "group_project/evaluation/", gotcha: "Giảm xuống 5 câu khi test thử để tránh rate limit."
+            }
+          ],
+          5: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Điều phối bài tập nhóm & kiểm tra results.md",
+              steps: ["Phân công ghép mã nguồn nhóm", "Đảm bảo file results.md có đầy đủ bảng điểm RAGAS"],
+              file: "group_project/evaluation/results.md", gotcha: "Nộp đủ app.py và results.md."
+            },
+            {
+              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
+              goal: "Nối hàm Task 10 sinh câu trả lời vào app.py",
+              steps: ["Import Task 10 generation vào app.py", "Xử lý danh sách sources trả về cho UI"],
+              file: "app.py", gotcha: "Bắt try/except nếu LLM bị lỗi."
+            },
+            {
+              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
+              goal: "Tùy chỉnh thông số retrieval trên Sidebar",
+              steps: ["Tạo slider điều chỉnh top_k trong sidebar", "Hiển thị thông tin kiến trúc Supervisor"],
+              file: "app.py", gotcha: "Top_k từ 3 đến 10 chunks."
+            },
+            {
+              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
+              goal: "Hoàn thiện giao diện Chatbot Streamlit",
+              steps: ["Thiết kế khung hội thoại st.chat_message", "Thêm các nút bấm gợi ý câu hỏi mẫu"],
+              file: "app.py", gotcha: "Tự động gửi câu hỏi khi bấm nút gợi ý."
+            },
+            {
+              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
+              goal: "Biên soạn Golden Dataset & chạy RAGAS eval",
+              steps: ["Viết 15 cặp Q&A vào golden_dataset.json", "Chạy eval_pipeline.py & xuất results.md"],
+              file: "group_project/evaluation/", gotcha: "So sánh Config A (Hybrid) vs Config B (Dense)."
+            }
+          ],
+          6: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Quản lý bài tập nhóm 6 người & chuẩn bị nộp",
+              steps: ["Tổng hợp code vào app.py", "Kiểm tra file results.md hoàn tất"],
+              file: "group_project/", gotcha: "Đảm bảo cả 6 người có tên trong phân công."
+            },
+            {
+              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
+              goal: "Rà soát lại danh sách nguồn trong app.py",
+              steps: ["Đảm bảo metadata nguồn hiển thị rõ ràng trên UI", "Hiển thị doc_type (legal/news)"],
+              file: "app.py", gotcha: "Hiển thị tên file nguồn thân thiện."
+            },
+            {
+              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
+              goal: "Nối logic Retrieval Pipeline vào Streamlit app",
+              steps: ["Import task9_retrieval_pipeline", "Kiểm tra tốc độ truy vấn trên UI"],
+              file: "app.py", gotcha: "Dùng @st.cache_resource load pipeline."
+            },
+            {
+              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
+              goal: "Hỗ trợ viết script eval_pipeline.py",
+              steps: ["Cấu hình Config A (Hybrid) & Config B (Dense)", "Chạy thử 2 config trên dataset"],
+              file: "group_project/evaluation/eval_pipeline.py", gotcha: "Đảm bảo 2 config chạy song song."
+            },
+            {
+              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
+              goal: "Hoàn thiện UI Streamlit Chatbot mượt mà",
+              steps: ["Thiết kế expander hiển thị nguồn tham khảo", "Định dạng điểm score dạng decimal 0.0000"],
+              file: "app.py", gotcha: "UI đẹp giúp tạo ấn tượng tốt khi demo."
+            },
+            {
+              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
+              goal: "Biên soạn Golden Dataset 20 câu & chạy RAGAS",
+              steps: ["Tạo golden_dataset.json 20 câu Q&A chuẩn", "Chạy RAGAS eval & xuất kết quả vào results.md"],
+              file: "group_project/evaluation/results.md", gotcha: "Đánh giá 4 chỉ số RAGAS chuẩn industry."
+            }
+          ]
+        }
+      },
+      {
+        id: 6,
+        badge: "CHECKPOINT 6",
+        title: "Thuyết Trình Demo Live (80 Phút) & Nộp Bài",
+        durationMinutes: 80,
+        quickCmd: "git add .; git commit -m 'Final RAG submission'; git push origin main",
+        passCriteria: "Tất cả các nhóm hoàn tất thuyết trình live demo ứng dụng Streamlit trước lớp (80 phút = 1h 20m) và cập nhật mã nguồn lên GitHub.",
+        roles: {
+          4: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Thuyết trình tổng quan hệ thống Chatbot RAG",
+              steps: ["Trình bày sơ đồ kiến trúc Hybrid RAG + Fallback", "Báo cáo phân công công việc của nhóm", "Dẫn dắt phần Q&A trước lớp"],
+              file: "Slide / Live Demo", gotcha: "Nhấn mạnh điểm nổi bật của Hybrid + Citation."
+            },
+            {
+              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
+              goal: "Giải đáp câu hỏi kỹ thuật về RAG Pipeline",
+              steps: ["Sẵn sàng giải thích về ChromaDB, bge-m3, BM25", "Giải thích cơ chế RRF Reranking (k=60)"],
+              file: "src/task9_retrieval_pipeline.py", gotcha: "Hiểu rõ tại sao dùng điểm Cosine gốc cho fallback."
+            },
+            {
+              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
+              goal: "Trực tiếp thao tác live demo Streamlit app",
+              steps: ["Mở ứng dụng Streamlit trên màn hình chiếu", "Nhập các câu hỏi demo mẫu", "Mở vùng expander cho lớp xem tài liệu trích dẫn"],
+              file: "app.py", gotcha: "Chuẩn bị sẵn 3-4 câu hỏi demo hay nhất."
+            },
+            {
+              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
+              goal: "Báo cáo chỉ số RAGAS & kết quả A/B testing",
+              steps: ["Trình bày bảng điểm RAGAS trong results.md", "Phân tích vì sao Config A tốt hơn Config B"],
+              file: "group_project/evaluation/results.md", gotcha: "Nêu rõ điểm cải thiện Faithfulness & Precision."
+            }
+          ],
+          5: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Thuyết trình giới thiệu ứng dụng nhóm",
+              steps: ["Trình bày tổng quan mục tiêu & kiến trúc dự án", "Điều phối các thành viên trả lời câu hỏi"],
+              file: "Slide / Live Demo", gotcha: "Quản lý thời gian thuyết trình trong 5-7 phút."
+            },
+            {
+              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
+              goal: "Giải thích kỹ thuật Dense Search & HyDE",
+              steps: ["Giải thích cơ chế embed hypothetical doc", "Trình bày cách lưu trữ ChromaDB"],
+              file: "src/task5_semantic_search.py", gotcha: "HyDE giúp tăng recall với query ngắn."
+            },
+            {
+              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
+              goal: "Giải thích kỹ thuật RRF Rerank & Fallback",
+              steps: ["Giải thích công thức gộp thứ hạng RRF", "Trình bày cơ chế kích hoạt PageIndex fallback"],
+              file: "src/task7_reranking.py", gotcha: "RRF gộp rank không phụ thuộc thang điểm."
+            },
+            {
+              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
+              goal: "Trình diễn live demo ứng dụng Streamlit",
+              steps: ["Thao tác trực tiếp trên giao diện app.py", "Demo khả năng trả lời kèm Citation"],
+              file: "app.py", gotcha: "Test trước kết nối Internet & API key."
+            },
+            {
+              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
+              goal: "Báo cáo bảng điểm RAGAS A/B testing",
+              steps: ["Báo cáo 4 chỉ số RAGAS thu được", "Phân tích điểm số trong results.md"],
+              file: "group_project/evaluation/results.md", gotcha: "So sánh sự vượt trội của Hybrid search."
+            }
+          ],
+          6: [
+            {
+              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
+              goal: "Thuyết trình tổng thể kiến trúc nhóm 6 người",
+              steps: ["Báo cáo tổng quan dự án RAG Pipeline v2", "Giới thiệu phân công công việc của 6 người"],
+              file: "Slide / Live Demo", gotcha: "Trình bày chuyên nghiệp, tự tin."
+            },
+            {
+              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
+              goal: "Báo cáo quy trình thu thập & convert dữ liệu",
+              steps: ["Trình bày cách crawl dữ liệu bằng Crawl4AI", "Giải thích quy trình convert PDF sang Markdown"],
+              file: "data/", gotcha: "Nêu rõ nguồn tài liệu uy tín đã thu thập."
+            },
+            {
+              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
+              goal: "Giải thích vector store ChromaDB & BAAI/bge-m3",
+              steps: ["Trình bày về embedding dim 1024", "Giải thích Cosine similarity search"],
+              file: "src/task4_chunking_indexing.py", gotcha: "Giải thích ưu điểm của model bge-m3."
+            },
+            {
+              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
+              goal: "Giải thích BM25 & PageIndex Fallback",
+              steps: ["Giải thích nguyên lý BM25 term saturation", "Trình bày giải pháp Vectorless RAG"],
+              file: "src/task8_pageindex_vectorless.py", gotcha: "PageIndex thích hợp cho tài liệu dài."
+            },
+            {
+              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
+              goal: "Vận hành live demo Streamlit Chatbot",
+              steps: ["Thực hiện demo trực tiếp câu hỏi người dùng", "Show phần nguồn tham khảo chi tiết"],
+              file: "app.py", gotcha: "Demo mượt mà không bị delay."
+            },
+            {
+              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
+              goal: "Báo cáo đánh giá chất lượng RAGAS",
+              steps: ["Trình bày báo cáo kết quả RAGAS 20 câu hỏi", "Kết luận hiệu quả của RAG Pipeline v2"],
+              file: "group_project/evaluation/results.md", gotcha: "Tổng kết bài học kinh nghiệm của nhóm."
+            }
+          ]
+        }
+      }
+    ];
+
+    // STATE VARIABLES
+    let currentCPIndex = 0;
+    let teamSize = 4;
+    let timeLeftSeconds = CHECKPOINTS[0].durationMinutes * 60;
+    let timerInterval = null;
+    let isRunning = false;
+
+    // INITIALIZATION
+    window.addEventListener('DOMContentLoaded', () => {
+      renderStepper();
+      loadCheckpoint(0);
+      setupKeyboardShortcuts();
+    });
+
+    // RENDER STEPPER BUTTONS
+    function renderStepper() {
+      const container = document.getElementById('stepper');
+      container.innerHTML = '';
+      CHECKPOINTS.forEach((cp, index) => {
+        const btn = document.createElement('button');
+        btn.className = `step-btn ${index === currentCPIndex ? 'active' : ''}`;
+        btn.innerHTML = `<span>CP${cp.id}</span>`;
+        btn.onclick = () => jumpToCP(index);
+        container.appendChild(btn);
+      });
+    }
+
+    // SET TEAM SIZE (4, 5, 6)
+    function setTeamSize(size) {
+      teamSize = size;
+      document.querySelectorAll('.team-opt').forEach(opt => opt.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('team-info-label').innerText = `Đang chọn: Nhóm ${size} người`;
+
+      // Update grid class
+      const gridEl = document.getElementById('roles-container');
+      gridEl.className = `roles-grid grid-${size}`;
+
+      renderRoles();
+    }
+
+    // LOAD CHECKPOINT DATA
+    function loadCheckpoint(index) {
+      currentCPIndex = index;
+      const cp = CHECKPOINTS[index];
+
+      // Update Header & Stepper
+      document.querySelectorAll('.step-btn').forEach((btn, idx) => {
+        btn.classList.remove('active');
+        if (idx === currentCPIndex) btn.classList.add('active');
+        if (idx < currentCPIndex) btn.classList.add('completed');
+      });
+
+      // Update CP Info
+      document.getElementById('cp-badge').innerText = cp.badge;
+      document.getElementById('cp-title').innerText = cp.title;
+      document.getElementById('cp-pass').innerText = cp.passCriteria;
+      document.getElementById('cp-cmd').innerText = cp.quickCmd;
+      document.getElementById('time-input').value = cp.durationMinutes;
+
+      // Reset Timer Clock
+      pauseTimer();
+      timeLeftSeconds = cp.durationMinutes * 60;
+      updateClockDisplay();
+
+      // Render Roles
+      renderRoles();
+    }
+
+    // RENDER DETAILED ROLES FOR CURRENT CP & TEAM SIZE
+    function renderRoles() {
+      const cp = CHECKPOINTS[currentCPIndex];
+      const rolesList = cp.roles[teamSize] || cp.roles[4];
+      const container = document.getElementById('roles-container');
+      container.innerHTML = '';
+
+      rolesList.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'role-card';
+
+        // Render steps HTML
+        const stepsHTML = r.steps.map((st, idx) => `
+          <li>
+            <span class="step-num">${idx + 1}.</span>
+            <span>${st}</span>
+          </li>
+        `).join('');
+
+        card.innerHTML = `
+          <div>
+            <div class="role-head">
+              <span class="role-badge ${r.badgeClass}">${r.role}</span>
+              <span class="role-name">${r.name}</span>
+            </div>
+
+            <div style="margin-top: 6px;">
+              <div class="role-section-label">📌 Mục tiêu:</div>
+              <div class="role-goal">${r.goal}</div>
+            </div>
+
+            <div style="margin-top: 6px;">
+              <div class="role-section-label">📝 Các bước thực hiện:</div>
+              <ul class="steps-list">
+                ${stepsHTML}
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <div style="margin-bottom: 6px;">
+              <div class="gotcha-box">⚡ <b>Lưu ý:</b> ${r.gotcha}</div>
+            </div>
+
+            <div class="file-loc">
+              <div class="file-loc-text">📂 ${r.file}</div>
+              <span class="file-loc-tag">Xử lý</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // TIMER CONTROLS
+    function updateClockDisplay() {
+      const minutes = Math.floor(timeLeftSeconds / 60);
+      const seconds = timeLeftSeconds % 60;
+      const displayStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      const clockEl = document.getElementById('clock');
+      clockEl.innerText = displayStr;
+
+      // Color warnings
+      clockEl.classList.remove('warning', 'danger');
+      if (timeLeftSeconds <= 60) {
+        clockEl.classList.add('danger');
+      } else if (timeLeftSeconds <= 300) {
+        clockEl.classList.add('warning');
+      }
+    }
+
+    function toggleTimer() {
+      if (isRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+      isRunning = true;
+      document.getElementById('btn-toggle-text').innerText = 'TẠM DỪNG';
+      document.getElementById('btn-toggle').style.background = 'var(--warning)';
+
+      timerInterval = setInterval(() => {
+        if (timeLeftSeconds > 0) {
+          timeLeftSeconds--;
+          updateClockDisplay();
+        } else {
+          pauseTimer();
+          playBeep();
+          alert(`⏰ Đã hết thời gian cho ${CHECKPOINTS[currentCPIndex].badge}! Hãy chuyển sang Checkpoint tiếp theo.`);
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('btn-toggle-text').innerText = 'BẮT ĐẦU';
+      document.getElementById('btn-toggle').style.background = 'var(--primary)';
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      const cp = CHECKPOINTS[currentCPIndex];
+      timeLeftSeconds = cp.durationMinutes * 60;
+      updateClockDisplay();
+    }
+
+    function updateCustomTime() {
+      const inputVal = parseInt(document.getElementById('time-input').value, 10);
+      if (!isNaN(inputVal) && inputVal > 0) {
+        pauseTimer();
+        timeLeftSeconds = inputVal * 60;
+        updateClockDisplay();
+      }
+    }
+
+    // NAVIGATION
+    function nextCP() {
+      if (currentCPIndex < CHECKPOINTS.length - 1) {
+        loadCheckpoint(currentCPIndex + 1);
+      }
+    }
+
+    function prevCP() {
+      if (currentCPIndex > 0) {
+        loadCheckpoint(currentCPIndex - 1);
+      }
+    }
+
+    function jumpToCP(index) {
+      loadCheckpoint(index);
+    }
+
+    // AUDIO BEEP ON FINISH
+    function playBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.8);
+      } catch (e) {
+        console.log("Audio play failed:", e);
+      }
+    }
+
+    // KEYBOARD SHORTCUTS
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          toggleTimer();
+        } else if (e.code === 'ArrowRight') {
+          nextCP();
+        } else if (e.code === 'ArrowLeft') {
+          prevCP();
+        } else if (e.code === 'KeyR') {
+          resetTimer();
+        }
+      });
+    }
+  </script>
+</body>
+</html>

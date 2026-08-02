@@ -34,8 +34,10 @@ Dữ liệu mẫu trong repo được crawl thật từ trang trung tâm trợ g
 ## Cấu Trúc Thư Mục
 
 ```
-K4-Day08-RAG-Pipeline/
+K4-Day08-RAG-Pipeline-Starter/
 ├── README.md
+├── LAB_GUIDE.md           ← Hướng dẫn chi tiết & Codelab
+├── checkpoint_timer.html  ← Dashboard đếm ngược Checkpoint & Phân vai
 ├── app.py                 ← Streamlit chatbot (bài nhóm)
 ├── data/
 │   ├── landing/           ← Task 1 & 2: raw files (PDF, JSON)
@@ -159,13 +161,12 @@ Các loại splitter phù hợp:
 - `BAAI/bge-m3` (multilingual, tốt cho tiếng Việt)
 - OpenAI `text-embedding-3-small` (nếu có API key)
 
-**Vector Store — khuyến cáo dùng Weaviate:**
+**Vector Store — sử dụng ChromaDB (Vector Store mặc định của bài lab):**
 ```bash
-pip install weaviate-client
+pip install chromadb
 ```
-- Weaviate hỗ trợ hybrid search (dense + BM25) built-in
-- Có thể dùng Docker hoặc Weaviate Cloud
-- Alternatives: ChromaDB (đơn giản), FAISS (nếu chỉ cần dense)
+- ChromaDB lưu trữ vector embeddings (`BAAI/bge-m3`), metadata và thông tin phân đoạn local tại thư mục `chroma_db/`
+- Hỗ trợ truy vấn tìm kiếm tương đồng Cosine (Cosine Similarity Search) phục vụ Dense Retrieval ở Task 5
 
 **Yêu cầu:**
 - Ghi rõ trong code: dùng chunking nào, chunk_size bao nhiêu, overlap bao nhiêu, vì sao

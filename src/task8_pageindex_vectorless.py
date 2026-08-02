@@ -105,6 +105,6 @@ if __name__ == "__main__":
         upload_documents()
 
         print("\nTest query:")
-        results = pageindex_search("tuition fee payment methods", top_k=3)
+        results = pageindex_search("danh sách sản phẩm cấm đăng bán", top_k=3)
         for r in results:
             print(f"[{r['score']:.3f}] {r['content'][:100]}...")

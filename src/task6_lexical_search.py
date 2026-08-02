@@ -78,6 +78,6 @@ def lexical_search(query: str, top_k: int = 10) -> list[dict]:
 
 if __name__ == "__main__":
     # Test
-    results = lexical_search("tuition fee payment methods", top_k=5)
+    results = lexical_search("phương thức thanh toán shopee", top_k=5)
     for r in results:
         print(f"[{r['score']:.3f}] {r['content'][:100]}...")
