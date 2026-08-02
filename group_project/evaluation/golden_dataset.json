@@ -1,0 +1,17 @@
+[
+  {
+    "question": "Người mua có thể yêu cầu trả hàng/hoàn tiền trong thời hạn bao lâu sau khi nhận hàng?",
+    "expected_answer": "Trong vòng 15 ngày kể từ khi giao hàng thành công (24 giờ đối với thực phẩm tươi sống/đông lạnh).",
+    "expected_context": "Trang Returns and Refunds Policy, mục Return/Refund Eligibility"
+  },
+  {
+    "question": "Shopee hỗ trợ những phương thức thanh toán nào?",
+    "expected_answer": "ShopeePay Wallet, thẻ tín dụng/ghi nợ, trả góp qua thẻ, QR Code, chuyển khoản qua app ngân hàng, thẻ NAPAS, Apple Pay, Google Pay, và COD.",
+    "expected_context": "Trang Payment Methods Overview"
+  },
+  {
+    "question": "Người bán không được đăng bán những sản phẩm nào?",
+    "expected_answer": "Hàng giả/nhái, sản phẩm bất hợp pháp, vi phạm sở hữu trí tuệ, và các mặt hàng nằm trong danh sách cấm của sàn.",
+    "expected_context": "Trang Product Listing Regulations, mục Prohibited Content"
+  }
+]
