@@ -653,7 +653,7 @@ Chấm bằng automated test suite (`pytest tests/ -v`). Mỗi task có test ri�
 | Tiêu chí | Điểm |
 |----------|------|
 | Giải thích cơ chế lexical search khác BM25 (trong demo) | 5 |
-| Implement HyDE (Hypothetical Document Embeddings) cho query | 5 |
+| Implement phương pháp hỗ trợ Semantic Search (HyDE, Query Expansion, ...) | 5 |
 | Deploy chatbot online (Hugging Face Spaces / Render / ...) | 4 |
 | Conversation memory (multi-turn chat) | 3 |
 | UI/UX chất lượng (hiển thị source, score, highlight) | 3 |
@@ -675,13 +675,17 @@ pytest tests/test_individual.py::TestTask5 -v
 
 ## Hướng Dẫn Thời Gian
 
-| Giai đoạn | Thời gian | Hoạt động |
-|-----------|-----------|-----------|
-| Task 1–3 | 0:00–0:45 | Thu thập data + convert markdown |
-| Task 4–6 | 0:45–1:45 | Chunking, indexing, search modules |
-| Task 7–8 | 1:45–2:15 | Reranking + PageIndex setup |
-| Task 9–10 | 2:15–3:00 | Pipeline hoàn chỉnh + generation |
-| Bài nhóm | Ngoài giờ | Tích hợp + build demo |
+Theo đúng 7 Checkpoint trong `checkpoint_timer.html` (tổng 180 phút = 3 giờ):
+
+| Checkpoint | Thời gian | Khoảng giờ | Hoạt động |
+|------------|-----------|-------------|-----------|
+| CP0 | 10 phút | 0:00–0:10 | Setup môi trường & khai báo API keys |
+| CP1 | 25 phút | 0:10–0:35 | Task 1–3: Thu thập data + convert markdown |
+| CP2 | 25 phút | 0:35–1:00 | Task 4–6: Chunking, indexing, search modules |
+| CP3 | 20 phút | 1:00–1:20 | Task 7–8: Reranking + PageIndex fallback |
+| CP4 | 25 phút | 1:20–1:45 | Task 9–10: Pipeline hoàn chỉnh + generation (mốc 50đ cá nhân) |
+| CP5 | 30 phút | 1:45–2:15 | Bài nhóm: Chatbot UI & đánh giá RAGAS |
+| CP6 | 45 phút | 2:15–3:00 | Thuyết trình demo live & nộp bài |
 
 ---
 

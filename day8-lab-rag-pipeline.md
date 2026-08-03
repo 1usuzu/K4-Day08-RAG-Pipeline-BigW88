@@ -1,7 +1,7 @@
 ---
 id: "day8-lab-rag-pipeline"
 title: "Lab 08 — RAG Pipeline v2: Retrieval Hybrid, Vectorless Fallback & Generation có Citation"
-duration: 240
+duration: 180
 author: "VinUni Codelab"
 updated: "2026-08-02"
 category: "RAG & Retrieval"
@@ -36,6 +36,7 @@ description: "Học viên xây dựng RAG pipeline 10 bước end-to-end cho ch�
 | **Semantic Search (Dense Retrieval)** | **Tìm kiếm theo ý nghĩa** | Tìm kiếm dựa trên độ tương đồng Cosine giữa vector câu hỏi và vector tài liệu. Giúp tìm ra đáp án ngay cả khi người dùng dùng từ đồng nghĩa (*"Gửi hàng lại như nào?"* vs *"Quy trình Trả hàng/Hoàn tiền"*). |
 | **Lexical Search (BM25 Sparse)** | **Tìm kiếm theo từ khoá chính xác** | Tìm kiếm dựa trên tần suất xuất hiện từ khoá (TF-IDF / BM25). Cực kỳ hiệu quả với mã đơn hàng, mã voucher (*"Mã SPP123"*). |
 | **HyDE (Hypothetical Document Embeddings)** | **Sinh câu trả lời giả định** | Cho LLM sinh một đoạn trả lời giả lập trước, sau đó dùng đoạn đó để truy vấn trong cơ sở dữ liệu. |
+| **Query Expansion** | **Diễn đạt lại câu hỏi theo nhiều cách** | Dùng LLM sinh 2-3 biến thể/đồng nghĩa của câu hỏi gốc, search riêng từng biến thể rồi gộp kết quả (bằng RRF) — tăng recall khi người dùng dùng từ ngữ khác với tài liệu. |
 | **RRF Reranking (Reciprocal Rank Fusion)** | **Thuật toán gộp thứ hạng** | Gộp thứ hạng từ Semantic Search và BM25 theo công thức $1/(60 + rank)$. Giải quyết triệt để vấn đề lệch thang điểm giữa Cosine `[0,1]` và BM25 `[0, ∞)`. |
 | **PageIndex (Vectorless Fallback)** | **Truy vấn theo cấu trúc Mục Lục** | Khi câu hỏi mang tính tổng hợp cả chương/mục hoặc tìm kiếm từng chunk thất bại, hệ thống chuyển sang đọc cấu trúc cây của tài liệu mà không cần chunking. |
 | **Lost-in-the-Middle** | **Hiện tượng Giảm chú ý ở giữa** | Hiện tượng các mô hình LLM ghi nhớ rất tốt thông tin ở **đầu** và **cuối** prompt, nhưng lại bỏ sót thông tin nằm ở **giữa**. |
@@ -80,7 +81,7 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 
 ## 🎯 2. Phân Công Vai Trò & Công Việc Theo Từng Checkpoint
 
-### 🔹 Checkpoint 0: Setup Môi Trường & Khởi Tạo Project (0:00 – 0:15)
+### 🔹 Checkpoint 0: Setup Môi Trường & Khởi Tạo Project (0:00 – 0:10)
 * 👑 **Role 1 (Team Leader & RAG Architect)**: Kiểm tra cả nhóm clone thành công repo Starter, khởi tạo repository chung cho nhóm và chia sẻ file `.env` với các API keys cần thiết (`OPENROUTER_API_KEY`).
 * ⚙️ **Role 2 (Data & Pipeline Specialist / Data Dev)**: Tạo môi trường ảo (`python -m venv .venv`), cài đặt gói phụ thuộc từ `requirements.txt`, kiểm tra import `chromadb` và `sentence_transformers`.
 * 🎨 **Role 3 (Frontend & Chatbot Dev)**: Kiểm tra cài đặt Streamlit bằng lệnh `streamlit run app.py`.
@@ -89,16 +90,16 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 
 ---
 
-### 🔹 Checkpoint 1: Thu Thập & Chuẩn Hoá Dữ Liệu — Task 1..3 (0:15 – 0:45)
+### 🔹 Checkpoint 1: Thu Thập & Chuẩn Hoá Dữ Liệu — Task 1..3 (0:10 – 0:35)
 * 👑 **Role 1 (Team Leader & RAG Architect)**: Kiểm tra phân công nguồn dữ liệu để tránh trùng lặp tài liệu giữa các thành viên.
 * ⚙️ **Role 2 (Data & Pipeline Specialist / Data Dev)**: Thực hiện **Task 1** — Tải $\ge 3$ tài liệu quy định/chính sách gốc (PDF/DOCX) lưu vào `data/landing/legal/`.
 * 🎨 **Role 3 (Frontend & Chatbot Dev)**: Thực hiện **Task 2** — Chạy script crawl $\ge 5$ bài viết/thông báo hướng dẫn lưu vào `data/landing/news/`.
-* 📊 **Role 4 / Role 5 / Role 6 (Evaluation & QA Engineer)**: Thực hiện **Task 3** — Thực thi `python src/task3_convert_markdown.py` chuyển đổi toàn bộ tài liệu sang dạng Markdown trong `data/standardized/`.
+* 📊 **Role 4 / Role 5 / Role 6 (Evaluation & QA Engineer)**: Thực hiện **Task 3** — Thực thi `python -m src.task3_convert_markdown` chuyển đổi toàn bộ tài liệu sang dạng Markdown trong `data/standardized/`.
 * ✅ **Tiêu chí hoàn thành (Pass Criteria)**: Đủ $\ge 3$ file trong `legal/`, $\ge 5$ file trong `news/`, và đã có các file `.md` tương ứng trong `standardized/` (`CP1 Passed`).
 
 ---
 
-### 🔹 Checkpoint 2: Chunking, Indexing & Search Cơ Bản — Task 4..6 (0:45 – 1:30)
+### 🔹 Checkpoint 2: Chunking, Indexing & Search Cơ Bản — Task 4..6 (0:35 – 1:00)
 * 👑 **Role 1 (Team Leader & RAG Architect)**: Kiểm tra tham số chunking (`CHUNK_SIZE=800`, `CHUNK_OVERLAP=100`) và xác nhận việc sử dụng embedding model `BAAI/bge-m3`.
 * ⚙️ **Role 2 (Data & Dense Search Dev)**: Thực hiện **Task 4** — Cắt đoạn văn bản, gọi model embedding và tạo cơ sở dữ liệu vector ChromaDB (`chroma_db/`).
 * 🎨 **Role 3 (Sparse Search Dev / UI Dev)**: Thực hiện **Task 5** — Hoàn thiện hàm `semantic_search()` trong `src/task5_semantic_search.py` (Dense Retrieval dựa trên Cosine Similarity & HyDE).
@@ -107,7 +108,7 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 
 ---
 
-### 🔹 Checkpoint 3: Reranking & Vectorless Fallback — Task 7..8 (1:30 – 1:50)
+### 🔹 Checkpoint 3: Reranking & Vectorless Fallback — Task 7..8 (1:00 – 1:20)
 * 👑 **Role 1 (Team Leader & RAG Architect)**: Kiểm tra công thức gộp thứ hạng RRF ($k=60$) đảm bảo cân bằng giữa kết quả Semantic và BM25.
 * ⚙️ **Role 2 (Pipeline Specialist / Sparse Dev)**: Thực hiện **Task 7** — Hoàn thiện hàm `rerank_rrf()` trong `src/task7_reranking.py`.
 * 🎨 **Role 3 (Frontend & Chatbot Dev)**: Thực hiện **Task 8** — Tích hợp SDK PageIndex trong `src/task8_pageindex_vectorless.py` để xử lý truy vấn trên văn bản dạng cấu trúc.
@@ -116,7 +117,7 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 
 ---
 
-### 🔹 Checkpoint 4: Pipeline Hoàn Chỉnh & Generation — Task 9..10 (1:50 – 2:30)
+### 🔹 Checkpoint 4: Pipeline Hoàn Chỉnh & Generation — Task 9..10 (1:20 – 1:45)
 * 👑 **Role 1 (Team Leader & RAG Architect)**: Kiểm tra toàn bộ mã nguồn bài cá nhân, chạy `pytest tests/test_individual.py` để xác nhận thành viên đạt đủ điểm bài cá nhân.
 * ⚙️ **Role 2 (Data & Pipeline Specialist)**: Hoàn thiện **Task 9** (`src/task9_retrieval_pipeline.py`) — Nối chuỗi Semantic + BM25 + RRF + PageIndex Fallback khi điểm Cosine $< 0.48$.
 * 🎨 **Role 3 (Frontend & Chatbot Dev)**: Hoàn thiện **Task 10** (`src/task10_generation.py`) — Áp dụng kỹ thuật Reordering (`front + back[::-1]`) và gọi LLM sinh câu trả lời có trích dẫn nguồn.
@@ -125,7 +126,7 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 
 ---
 
-### 🔹 Checkpoint 5: Bài Tập Nhóm — Chatbot UI & Đánh Giá RAGAS (2:30 – 3:30)
+### 🔹 Checkpoint 5: Bài Tập Nhóm — Chatbot UI & Đánh Giá RAGAS (1:45 – 2:15)
 * 👑 **Role 1 (Team Leader & RAG Architect)**: Phân công tổng hợp đoạn mã nguồn tối ưu nhất của nhóm vào `app.py` và theo dõi tiến độ hoàn thiện báo cáo.
 * ⚙️ **Role 2 (Data & Pipeline Specialist)**: Kết nối hàm `generate_with_citation()` từ Task 10 vào luồng xử lý câu hỏi của `app.py`.
 * 🎨 **Role 3 (Frontend & Chatbot Dev)**: Hoàn thiện ứng dụng Chatbot Streamlit (`app.py`), thiết kế giao diện chat, thanh cài đặt tham số `top_k`, vùng hiển thị danh sách tài liệu tham khảo và các câu hỏi gợi ý.
@@ -134,7 +135,7 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 
 ---
 
-### 🔹 Checkpoint 6: Thuyết Trình Demo & Nộp Bài (3:30 – 4:00)
+### 🔹 Checkpoint 6: Thuyết Trình Demo & Nộp Bài (2:15 – 3:00)
 * 👑 **Role 1 (Team Leader & RAG Architect)**: Thuyết trình tổng quan về ứng dụng Chatbot và kiến trúc RAG Pipeline trước lớp.
 * ⚙️ **Role 2 (Data & Pipeline Specialist)**: Trả lời các câu hỏi kỹ thuật liên quan đến thuật toán Hybrid Search, RRF và Fallback logic từ Giảng viên / Coach.
 * 🎨 **Role 3 (Frontend & Chatbot Dev)**: Trực tiếp thao tác và trình diễn ứng dụng Streamlit live demo trên màn hình chiếu.
@@ -143,23 +144,21 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 
 ---
 
-## 🧭 3. Lộ Trình & Các Checkpoint Quan Trọng (4.0 Giờ)
+## 🧭 3. Lộ Trình & Các Checkpoint Quan Trọng (3.0 Giờ)
 
-| Checkpoint / Hoạt động | Thời gian | Mục tiêu phải đạt | File nộp / Kiểm tra |
+Đúng theo 7 checkpoint trong `checkpoint_timer.html` (tổng 180 phút = 3 giờ). Mỗi checkpoint đã
+bao gồm sẵn vài phút review/demo ngẫu nhiên cuối chặng (xem "Pass Criteria" trong dashboard),
+không cần thêm slot review riêng.
+
+| Checkpoint | Thời gian | Mục tiêu phải đạt | File nộp / Kiểm tra |
 | :--- | :---: | :--- | :--- |
 | **CP0** 🟦 | 0:00–0:10 (10m) | Cài xong môi trường venv, có file `.env` chứa API Key | `pip install -r requirements.txt` |
-| 🎤 *Review & Call-out 1* | 0:10–0:15 (5m) | Coach gọi ngẫu nhiên 1-2 đại diện demo setup venv & `.env` | Kiểm tra môi trường |
-| **CP1** 🟦 | 0:15–0:30 (15m) | Có $\ge 3$ PDF trong `legal/`, $\ge 5$ JSON trong `news/` và convert sang `.md` | `python src/task3_convert_markdown.py` |
-| 🎤 *Review & Call-out 2* | 0:30–0:35 (5m) | Gọi ngẫu nhiên 1 nhóm demo `.md` đã convert & chia sẻ kinh nghiệm | Review dữ liệu |
-| **CP2** 🟩 | 0:35–1:00 (25m) | Cắt đoạn văn bản, lưu ChromaDB, chạy thử Semantic & BM25 | `python src/task4_chunking_indexing.py` |
-| 🎤 *Review & Call-out 3* | 1:00–1:05 (5m) | Gọi ngẫu nhiên demo so sánh kết quả Dense Search vs Lexical Search | Review Retrieval |
-| **CP3** 🟩 | 1:05–1:20 (15m) | Viết thuật toán RRF Rerank gộp thứ hạng & tích hợp PageIndex | `python src/task7_reranking.py` |
-| 🎤 *Review & Call-out 4* | 1:20–1:25 (5m) | Trình bày công thức RRF và trigger điều kiện Cosine $< 0.48$ | Review Fallback |
-| **CP4** 🟩 | 1:25–1:50 (25m) | **Mốc cá nhân 50đ**: Chạy Pytest đạt 35/35 PASSED | `pytest tests/test_individual.py -v` |
-| 🎤 *Review & Call-out 5* | 1:50–2:00 (10m) | Coach tổng hợp chốt điểm cá nhân (50/50đ) & gỡ lỗi trực tiếp | Chốt điểm cá nhân |
-| **CP5** 🟧 | 2:00–2:30 (30m) | **Mốc bài nhóm 50đ**: Chạy Chatbot Streamlit + Đánh giá RAGAS | `streamlit run app.py` |
-| 🎤 *Review & Call-out 6* | 2:30–2:40 (10m) | Các nhóm kiểm tra lại Streamlit live demo & chuẩn bị thuyết trình | Chuẩn bị Demo |
-| **CP6** 🟦 | 2:40–4:00 (80m) | **Thuyết trình Live Demo các nhóm (1h 20m)** & Push code GitHub | `git push origin main` |
+| **CP1** 🟦 | 0:10–0:35 (25m) | Có $\ge 3$ PDF trong `legal/`, $\ge 5$ JSON trong `news/` và convert sang `.md` | `python -m src.task3_convert_markdown` |
+| **CP2** 🟩 | 0:35–1:00 (25m) | Cắt đoạn văn bản, lưu ChromaDB, chạy thử Semantic & BM25 | `python -m src.task4_chunking_indexing` |
+| **CP3** 🟩 | 1:00–1:20 (20m) | Viết thuật toán RRF Rerank gộp thứ hạng & tích hợp PageIndex | `python -m src.task7_reranking` |
+| **CP4** 🟩 | 1:20–1:45 (25m) | **Mốc cá nhân 50đ**: Chạy Pytest đạt 35/35 PASSED | `python -m pytest tests/test_individual.py -v` |
+| **CP5** 🟧 | 1:45–2:15 (30m) | **Mốc bài nhóm 50đ**: Chạy Chatbot Streamlit + Đánh giá RAGAS | `streamlit run app.py` |
+| **CP6** 🟦 | 2:15–3:00 (45m) | **Thuyết trình Live Demo các nhóm (45 phút)** & Push code GitHub | `git push origin main` |
 
 ---
 
