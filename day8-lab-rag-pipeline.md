@@ -235,7 +235,7 @@ Chia nhỏ các công đoạn dữ liệu và kiểm thử chuyên sâu:
 - ❓ **Tại sao phải làm bước này?**:
   - **Tại sao phải Reorder?**: Theo nghiên cứu *Lost in the Middle (Liu et al. 2023)*, LLM chú ý rất mạnh vào thông tin nằm ở **đầu** và **cuối** prompt, nhưng ngó lơ thông tin nằm ở **giữa**. Xếp đoạn quan trọng nhất vào đầu và cuối giúp LLM không bỏ sót dữ liệu.
   - **Tại sao phải ép Citation?**: Trích dẫn nguồn giúp kiểm chứng câu trả lời, minh bạch thông tin và ngăn chặn AI bịa đặt.
-- 🛠️ **Cách làm**: Chạy `python src/task10_generation.py`.
+- 🛠️ **Cách làm**: Chạy `python -m src.task10_generation` (từ thư mục gốc repo, không cd vào src/).
 - 🎯 **KIỂM TRA HOÀN THÀNH BÀI CÁ NHÂN**: Chạy lệnh `pytest tests/test_individual.py -v`. Khi màn hình báo **`35 passed`** là bạn đã đạt **50/50 điểm cá nhân**!
 
 ---

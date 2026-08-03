@@ -307,6 +307,7 @@
       border-radius: 6px;
       word-break: break-all;
       border: 1px solid #1e293b;
+      white-space: pre-line;
     }
 
     /* RIGHT PANEL: FULL SCREEN ROLE GUIDE */
@@ -600,103 +601,31 @@
         badge: "CHECKPOINT 0",
         title: "Setup Môi Trường & Khởi Tạo Project",
         durationMinutes: 10,
-        quickCmd: "python -m venv .venv; .venv\\Scripts\\Activate.ps1; pip install -r requirements.txt",
-        passCriteria: "Tất cả các thành viên khởi tạo xong venv, cài đầy đủ requirements.txt và test import thành công. (Cuối CP: Coach gọi ngẫu nhiên 1-2 nhóm demo setup 5 phút).",
+        quickCmd: "python -m venv .venv\n.venv\\Scripts\\Activate.ps1\npip install -r requirements.txt",
+        passCriteria: "Tất cả các thành viên (không phân biệt role) tự setup xong venv, cài đầy đủ requirements.txt, điền .env và test import thành công. (Cuối CP: Coach gọi ngẫu nhiên 1-2 nhóm demo setup 5 phút).",
         roles: {
           4: [
             {
-              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
-              goal: "Cấp .env & Quản lý repository nhóm",
-              steps: ["Clone repo starter về máy local", "Tạo file .env từ file .env.example", "Điền OPENROUTER_API_KEY (miễn phí)", "Khởi tạo repo chung push lên GitHub"],
-              file: ".env.example -> .env", gotcha: "Lưu ý đặt đúng tên file là .env (phải có dấu chấm ở đầu)."
-            },
-            {
-              role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
-              goal: "Khởi tạo venv & cài đặt gói phụ thuộc",
-              steps: ["Chạy python -m venv .venv", "Kích hoạt môi trường ảo (virtualenv)", "Chạy pip install -r requirements.txt", "Tải Chromium: playwright install chromium"],
-              file: "requirements.txt", gotcha: "Nhớ kích hoạt venv trước khi pip install."
-            },
-            {
-              role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
-              goal: "Thử nghiệm giao diện Streamlit mẫu",
-              steps: ["Mở file app.py kiểm tra khung UI", "Chạy lệnh streamlit run app.py", "Xác nhận browser mở trang local 8501", "Kiểm tra hiển thị nút bấm gợi ý câu hỏi"],
-              file: "app.py", gotcha: "Nếu port 8501 bị trùng, Streamlit tự nhảy 8502."
-            },
-            {
-              role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
-              goal: "Kiểm tra thư viện RAGAS & Pytest",
-              steps: ["Chạy python -c 'import ragas, chromadb'", "Chạy thử lệnh pytest --version", "Kiểm tra thư mục group_project/evaluation/", "Đảm bảo không bị thiếu package eval"],
-              file: "group_project/evaluation/", gotcha: "Windows bị mã hoá console thì set $env:PYTHONIOENCODING='utf-8'."
+              role: "Cả nhóm", name: "Mọi thành viên đều làm giống nhau", badgeClass: "badge-r1",
+              goal: "Setup môi trường & khai báo API keys",
+              steps: ["Clone repo starter về máy local", "Tạo venv: python -m venv .venv rồi kích hoạt", "Chạy pip install -r requirements.txt", "Copy .env.example -> .env", "Điền OPENROUTER_API_KEY (bắt buộc, có thể dùng model :free)", "Điền PAGEINDEX_API_KEY (tùy chọn, cho Task 8 fallback)", "Điền JINA_API_KEY (tùy chọn, cho Task 7 cross-encoder rerank)", "Test: streamlit run app.py chạy được là xong"],
+              file: ".env.example -> .env", gotcha: "Chỉ OPENROUTER_API_KEY là bắt buộc; JINA_API_KEY và PAGEINDEX_API_KEY để trống vẫn chạy được (tự fallback về RRF/bỏ qua Task 8)."
             }
           ],
           5: [
             {
-              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
-              goal: "Khởi tạo project nhóm & cấp API key",
-              steps: ["Clone starter repo & đẩy lên GitHub nhóm", "Tạo file .env và điền OPENROUTER_API_KEY", "Phân chia quyền truy cập repo cho 5 người"],
-              file: ".env", gotcha: "Chia sẻ API key an toàn qua nhóm chat."
-            },
-            {
-              role: "Role 2", name: "Data & Dense Search Dev", badgeClass: "badge-r2",
-              goal: "Setup venv & test import ChromaDB",
-              steps: ["Khởi tạo môi trường venv", "Cài đặt requirements.txt", "Chạy python -c 'import chromadb'"],
-              file: "requirements.txt", gotcha: "Cần Python 3.10+ (khuyên dùng 3.11)."
-            },
-            {
-              role: "Role 3", name: "Sparse & Rerank Dev", badgeClass: "badge-r3",
-              goal: "Test import rank-bm25 & scikit-learn",
-              steps: ["Cài đặt các thư viện lexical search", "Chạy python -c 'import rank_bm25, sklearn'"],
-              file: "src/task6_lexical_search.py", gotcha: "BM25Okapi yêu cầu tokenize danh sách từ."
-            },
-            {
-              role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
-              goal: "Chạy thử ứng dụng Streamlit UI",
-              steps: ["Kiểm tra file app.py starter mẫu", "Thực thi lệnh streamlit run app.py"],
-              file: "app.py", gotcha: "Đảm bảo giao diện hiển thị sidebar."
-            },
-            {
-              role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
-              goal: "Test môi trường đánh giá RAGAS",
-              steps: ["Chạy python -c 'import ragas, datasets'", "Kiểm tra cấu trúc file golden_dataset.json"],
-              file: "group_project/evaluation/", gotcha: "RAGAS cần OpenAI API key hoặc OpenRouter."
+              role: "Cả nhóm", name: "Mọi thành viên đều làm giống nhau", badgeClass: "badge-r1",
+              goal: "Setup môi trường & khai báo API keys",
+              steps: ["Clone repo starter về máy local", "Tạo venv: python -m venv .venv rồi kích hoạt", "Chạy pip install -r requirements.txt", "Copy .env.example -> .env", "Điền OPENROUTER_API_KEY (bắt buộc, có thể dùng model :free)", "Điền PAGEINDEX_API_KEY (tùy chọn, cho Task 8 fallback)", "Điền JINA_API_KEY (tùy chọn, cho Task 7 cross-encoder rerank)", "Test: streamlit run app.py chạy được là xong"],
+              file: ".env.example -> .env", gotcha: "Chỉ OPENROUTER_API_KEY là bắt buộc; JINA_API_KEY và PAGEINDEX_API_KEY để trống vẫn chạy được (tự fallback về RRF/bỏ qua Task 8)."
             }
           ],
           6: [
             {
-              role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
-              goal: "Thiết lập dự án & phân quyền nhóm 6 người",
-              steps: ["Clone repo & khởi tạo GitHub nhóm", "Cấu hình .env đầy đủ các API keys"],
-              file: ".env", gotcha: "Đảm bảo 6 thành viên dùng chung config."
-            },
-            {
-              role: "Role 2", name: "Data Scraper Dev", badgeClass: "badge-r2",
-              goal: "Cài đặt gói Crawl4AI & MarkItDown",
-              steps: ["Cài markitdown[pdf] và crawl4ai", "Chạy playwright install chromium"],
-              file: "requirements.txt", gotcha: "Quên playwright install sẽ không crawl được."
-            },
-            {
-              role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
-              goal: "Test load model sentence_transformers",
-              steps: ["Chạy test import sentence_transformers", "Xác nhận GPU/CPU device embedding"],
-              file: "src/task4_chunking_indexing.py", gotcha: "Lần đầu tải BAAI/bge-m3 mất 1-2 phút."
-            },
-            {
-              role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
-              goal: "Test thư viện BM25Okapi & TF-IDF",
-              steps: ["Kiểm tra gói rank-bm25 và sklearn", "Test hàm tokenize tiếng Việt đơn giản"],
-              file: "src/task6_lexical_search.py", gotcha: "Tách từ tiếng Việt đơn giản bằng split()."
-            },
-            {
-              role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
-              goal: "Chạy thử Streamlit app.py mẫu",
-              steps: ["Thực thi streamlit run app.py", "Kiểm tra khung chat và nút gợi ý"],
-              file: "app.py", gotcha: "Streamlit tự bật trên trình duyệt mặc định."
-            },
-            {
-              role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
-              goal: "Test framework đánh giá RAGAS & Pytest",
-              steps: ["Chạy pytest --version", "Kiểm tra import ragas.metrics"],
-              file: "group_project/evaluation/", gotcha: "RAGAS dùng 4 metrics chính."
+              role: "Cả nhóm", name: "Mọi thành viên đều làm giống nhau", badgeClass: "badge-r1",
+              goal: "Setup môi trường & khai báo API keys",
+              steps: ["Clone repo starter về máy local", "Tạo venv: python -m venv .venv rồi kích hoạt", "Chạy pip install -r requirements.txt", "Copy .env.example -> .env", "Điền OPENROUTER_API_KEY (bắt buộc, có thể dùng model :free)", "Điền PAGEINDEX_API_KEY (tùy chọn, cho Task 8 fallback)", "Điền JINA_API_KEY (tùy chọn, cho Task 7 cross-encoder rerank)", "Test: streamlit run app.py chạy được là xong"],
+              file: ".env.example -> .env", gotcha: "Chỉ OPENROUTER_API_KEY là bắt buộc; JINA_API_KEY và PAGEINDEX_API_KEY để trống vẫn chạy được (tự fallback về RRF/bỏ qua Task 8)."
             }
           ]
         }
@@ -705,15 +634,15 @@
         id: 1,
         badge: "CHECKPOINT 1",
         title: "Thu Thập & Chuẩn Hoá Dữ Liệu (Task 1–3)",
-        durationMinutes: 15,
-        quickCmd: "python src/task1_collect_legal_docs.py; python src/task2_crawl_news.py; python src/task3_convert_markdown.py",
+        durationMinutes: 25,
+        quickCmd: "python -m src.task1_collect_legal_docs\npython -m src.task2_crawl_news\npython -m src.task3_convert_markdown",
         passCriteria: "Đủ >=3 file PDF/DOCX trong data/landing/legal/, >=5 file tin tức trong news/ và đã convert sang .md. (Cuối CP: Gọi ngẫu nhiên demo file .md & chia sẻ kinh nghiệm 5 phút).",
         roles: {
           4: [
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Phân chia URL & kiểm tra dữ liệu sau convert",
-              steps: ["Phân công danh mục URL tránh trùng file", "Rà soát file .md sinh ra trong standardized/", "Đảm bảo file .md có nội dung (>500 bytes)"],
+              steps: ["Phân công danh mục URL tránh trùng file", "Rà soát file .md sinh ra trong standardized/", "Đảm bảo file .md có nội dung (>500 bytes)", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "data/landing/ -> data/standardized/", gotcha: "Nếu trang bị 403 Cloudflare -> dùng data mẫu có sẵn."
             },
             {
@@ -739,7 +668,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Điều phối thu thập & rà soát dữ liệu Markdown",
-              steps: ["Phân chia các trang web chính thức cần crawl", "Kiểm tra cây thư mục data/standardized/"],
+              steps: ["Phân chia các trang web chính thức cần crawl", "Kiểm tra cây thư mục data/standardized/", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "data/standardized/", gotcha: "Đảm bảo đủ 2 subfolder legal và news."
             },
             {
@@ -771,7 +700,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Phân công nguồn crawl dữ liệu nhóm 6 người",
-              steps: ["Chia 3 nguồn PDF chính sách & 5 nguồn tin tức", "Kiểm tra tính nhất quán dữ liệu"],
+              steps: ["Chia 3 nguồn PDF chính sách & 5 nguồn tin tức", "Kiểm tra tính nhất quán dữ liệu", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "data/", gotcha: "Tránh nộp lặp lại 1 bài báo nhiều lần."
             },
             {
@@ -812,14 +741,14 @@
         badge: "CHECKPOINT 2",
         title: "Chunking, Indexing & Search Cơ Bản (Task 4–6)",
         durationMinutes: 25,
-        quickCmd: "python src/task4_chunking_indexing.py; python src/task5_semantic_search.py; python src/task6_lexical_search.py",
+        quickCmd: "python -m src.task4_chunking_indexing\npython -m src.task5_semantic_search\npython -m src.task6_lexical_search",
         passCriteria: "Thư mục chroma_db/ sinh ra dữ liệu; pytest Task 4-6 PASSED. (Cuối CP: Demo ngẫu nhiên so sánh Semantic vs BM25 5 phút).",
         roles: {
           4: [
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Duyệt config chunking & collection ChromaDB",
-              steps: ["Xác nhận CHUNK_SIZE=800, CHUNK_OVERLAP=100", "Đảm bảo COLLECTION_NAME đồng bộ domain", "Xác nhận embedding model BAAI/bge-m3 (1024 dim)"],
+              steps: ["Xác nhận CHUNK_SIZE=800, CHUNK_OVERLAP=100", "Đảm bảo COLLECTION_NAME đồng bộ domain", "Xác nhận embedding model BAAI/bge-m3 (1024 dim)", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "src/task4_chunking_indexing.py", gotcha: "Đổi corpus phải xoá thư mục chroma_db cũ."
             },
             {
@@ -845,7 +774,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Duyệt tham số Vector DB & Embedding Model",
-              steps: ["Kiểm tra model BAAI/bge-m3", "Đảm bảo collection name hợp lệ"],
+              steps: ["Kiểm tra model BAAI/bge-m3", "Đảm bảo collection name hợp lệ", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "src/task4_chunking_indexing.py", gotcha: "Xóa database cũ nếu đổi corpus."
             },
             {
@@ -877,7 +806,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Kiểm tra tiến độ Indexing & Search nhóm 6 người",
-              steps: ["Đảm bảo 6 người dùng chung 1 cấu hình vector DB", "Kiểm tra số lượng chunks đã index"],
+              steps: ["Đảm bảo 6 người dùng chung 1 cấu hình vector DB", "Kiểm tra số lượng chunks đã index", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "src/task4_chunking_indexing.py", gotcha: "Xác nhận collection.count() > 0."
             },
             {
@@ -917,22 +846,22 @@
         id: 3,
         badge: "CHECKPOINT 3",
         title: "Reranking & PageIndex Fallback (Task 7–8)",
-        durationMinutes: 15,
-        quickCmd: "python src/task7_reranking.py; python src/task8_pageindex_vectorless.py",
-        passCriteria: "RRF Rerank gộp kết quả Semantic + BM25; PageIndex fallback hoạt động. (Cuối CP: Trình bày RRF logic & trigger Fallback 5 phút).",
+        durationMinutes: 20,
+        quickCmd: "python -m src.task7_reranking\npython -m src.task8_pageindex_vectorless",
+        passCriteria: "RRF Rerank gộp thành công kết quả từ Semantic + BM25; PageIndex fallback trả về kết quả truy vấn cho văn bản cấu trúc.",
         roles: {
           4: [
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Duyệt công thức RRF & smoothing constant k=60",
-              steps: ["Kiểm tra công thức RRF(d) = sum(1 / (k + rank))", "Xác nhận k=60 từ paper Cormack et al. 2009", "Đảm bảo gộp kết quả công bằng giữa các ranker"],
+              steps: ["Kiểm tra công thức RRF(d) = sum(1 / (k + rank))", "Xác nhận k=60 từ paper Cormack et al. 2009", "Đảm bảo gộp kết quả công bằng giữa các ranker", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "src/task7_reranking.py", gotcha: "RRF không cần API key, chạy hoàn toàn local."
             },
             {
               role: "Role 2", name: "Data & Retrieval Specialist", badgeClass: "badge-r2",
-              goal: "Task 7 — Viết thuật toán RRF Reranking",
-              steps: ["Nhận danh sách ranked_lists từ Semantic & BM25", "Tính điểm cộng dồn RRF cho từng chunk", "Sort kết quả theo điểm RRF giảm dần", "Làm tròn điểm 6 chữ số thập phân"],
-              file: "src/task7_reranking.py", gotcha: "Tùy chọn Cross-encoder Jina API nếu có key."
+              goal: "Task 7 — Viết thuật toán RRF Reranking + Cross-encoder",
+              steps: ["Nhận danh sách ranked_lists từ Semantic & BM25", "Tính điểm cộng dồn RRF cho từng chunk", "Sort kết quả theo điểm RRF giảm dần", "Làm tròn điểm 6 chữ số thập phân", "Tích hợp Cross-encoder Jina Reranker (rerank_cross_encoder()) nếu có JINA_API_KEY"],
+              file: "src/task7_reranking.py", gotcha: "Không có JINA_API_KEY -> tự fallback về RRF, không lỗi."
             },
             {
               role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
@@ -951,7 +880,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Rà soát logic RRF Rerank & PageIndex",
-              steps: ["Xác nhận logic RRF fusion hoạt động tốt", "Đảm bảo cache doc_ids không bị nộp đè"],
+              steps: ["Xác nhận logic RRF fusion hoạt động tốt", "Đảm bảo cache doc_ids không bị nộp đè", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "src/task7_reranking.py", gotcha: "RRF gộp top-k từ 2 bảng xếp hạng."
             },
             {
@@ -983,7 +912,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Kiểm tra tích hợp RRF & PageIndex nhóm 6 người",
-              steps: ["Đảm bảo 6 người dùng chung công thức RRF", "Rà soát file cache pageindex_doc_ids.json"],
+              steps: ["Đảm bảo 6 người dùng chung công thức RRF", "Rà soát file cache pageindex_doc_ids.json", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "src/task7_reranking.py", gotcha: "Không upload lại PDF nếu đã cached."
             },
             {
@@ -994,9 +923,9 @@
             },
             {
               role: "Role 3", name: "Vector Search Dev", badgeClass: "badge-r3",
-              goal: "Task 7 — Viết thuật toán RRF Reranking",
-              steps: ["Tính toán rrf_scores từ dense + sparse", "Return candidates sorted by rrf_score"],
-              file: "src/task7_reranking.py", gotcha: "RRF score nằm trong khoảng ~0.01 - 0.03."
+              goal: "Task 7 — Viết thuật toán RRF Reranking + Cross-encoder",
+              steps: ["Tính toán rrf_scores từ dense + sparse", "Return candidates sorted by rrf_score", "Tích hợp Cross-encoder Jina Reranker (rerank_cross_encoder()) nếu có JINA_API_KEY"],
+              file: "src/task7_reranking.py", gotcha: "RRF score nằm trong khoảng ~0.01 - 0.03; không có JINA_API_KEY vẫn fallback về RRF."
             },
             {
               role: "Role 4", name: "Sparse Search Dev", badgeClass: "badge-r4",
@@ -1024,14 +953,14 @@
         badge: "CHECKPOINT 4",
         title: "Pipeline Hoàn Chỉnh & Generation (Task 9–10)",
         durationMinutes: 25,
-        quickCmd: "python src/task9_retrieval_pipeline.py; python src/task10_generation.py; python -m pytest tests/test_individual.py -v",
+        quickCmd: "python -m src.task9_retrieval_pipeline\npython -m src.task10_generation\npython -m pytest tests/test_individual.py -v",
         passCriteria: "Chạy pytest tests/test_individual.py đạt 35/35 TEST PASSED (Hoàn thành 50đ cá nhân). (Cuối CP: Coach chốt 50đ cá nhân & gỡ lỗi 10 phút).",
         roles: {
           4: [
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Duyệt 50/50 điểm bài cá nhân của toàn nhóm",
-              steps: ["Chạy pytest tests/test_individual.py -v", "Xác nhận màn hình hiển thị 35 passed", "Duyệt code sẵn sàng chuyển sang bài tập nhóm"],
+              steps: ["Chạy pytest tests/test_individual.py -v", "Xác nhận màn hình hiển thị 35 passed", "Duyệt code sẵn sàng chuyển sang bài tập nhóm", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "tests/test_individual.py", gotcha: "Mốc quan trọng nhất của bài lab cá nhân!"
             },
             {
@@ -1044,7 +973,7 @@
               role: "Role 3", name: "Frontend & Chatbot Dev", badgeClass: "badge-r3",
               goal: "Task 10 — Reordering & LLM Generation có Citation",
               steps: ["Xếp lại thứ tự chunks tránh lost-in-the-middle: front + back[::-1]", "Gắn nhãn source cho từng chunk trong context", "Gọi OpenRouter (inclusionai/ling-3.0-flash:free)", "SYSTEM_PROMPT yêu cầu bắt buộc trích dẫn [Source]"],
-              file: "src/task10_generation.py", gotcha: "Liu et al. 2023: LLM chỉ nhớ đầu & cuối, quên giữa."
+              file: "src/task10_generation.py", gotcha: "Liu et al. 2023: LLM chỉ nhớ đầu & cuối, quên giữa. OpenRouter free tier giới hạn 50 req/ngày -> nếu bị 429, đổi sang OPENAI_API_KEY hoặc GEMINI_API_KEY nếu có."
             },
             {
               role: "Role 4", name: "Evaluation & QA Engineer", badgeClass: "badge-r4",
@@ -1057,7 +986,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Xác nhận 35/35 test passed cho cả 5 thành viên",
-              steps: ["Chạy pytest tests/test_individual.py -v", "Xác nhận 100% test passed"],
+              steps: ["Chạy pytest tests/test_individual.py -v", "Xác nhận 100% test passed", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "tests/test_individual.py", gotcha: "Hoàn tất 50 điểm bài cá nhân."
             },
             {
@@ -1076,7 +1005,7 @@
               role: "Role 4", name: "Frontend & Chatbot Dev", badgeClass: "badge-r4",
               goal: "Task 10 — Reordering & LLM Citation Generation",
               steps: ["Viết reorder_for_llm() & format_context()", "Gọi OpenRouter LLM sinh câu trả lời"],
-              file: "src/task10_generation.py", gotcha: "Temperature=0.3, Top_P=0.9."
+              file: "src/task10_generation.py", gotcha: "Temperature=0.3, Top_P=0.9. OpenRouter free tier giới hạn 50 req/ngày -> nếu bị 429, đổi sang OPENAI_API_KEY hoặc GEMINI_API_KEY nếu có."
             },
             {
               role: "Role 5", name: "Evaluation & QA Engineer", badgeClass: "badge-r5",
@@ -1089,7 +1018,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Chốt 50 điểm bài cá nhân cho nhóm 6 người",
-              steps: ["Chạy pytest kiểm tra 35/35 passed", "Duyệt chuyển sang làm bài tập nhóm"],
+              steps: ["Chạy pytest kiểm tra 35/35 passed", "Duyệt chuyển sang làm bài tập nhóm", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "tests/test_individual.py", gotcha: "Đảm bảo cả 6 máy đều pass test."
             },
             {
@@ -1114,7 +1043,7 @@
               role: "Role 5", name: "Frontend UI Dev", badgeClass: "badge-r5",
               goal: "Task 10 — Document Reordering & LLM Generation",
               steps: ["Thực thi reorder_for_llm()", "Gửi prompt tới OpenRouter sinh câu trả lời"],
-              file: "src/task10_generation.py", gotcha: "Model inclusionai/ling-3.0-flash:free."
+              file: "src/task10_generation.py", gotcha: "Model inclusionai/ling-3.0-flash:free. Free tier giới hạn 50 req/ngày -> nếu bị 429, đổi sang OPENAI_API_KEY hoặc GEMINI_API_KEY nếu có."
             },
             {
               role: "Role 6", name: "Benchmark QA Dev", badgeClass: "badge-r6",
@@ -1130,14 +1059,14 @@
         badge: "CHECKPOINT 5",
         title: "Bài Tập Nhóm — Chatbot UI & Đánh Giá RAGAS",
         durationMinutes: 30,
-        quickCmd: "streamlit run app.py; python -m group_project.evaluation.eval_pipeline",
+        quickCmd: "streamlit run app.py\npython -m group_project.evaluation.eval_pipeline",
         passCriteria: "Chatbot Streamlit app.py chạy mượt kèm trích dẫn; file group_project/evaluation/results.md hiển thị bảng điểm RAGAS A/B testing. (Cuối CP: Rà soát live app 10 phút).",
         roles: {
           4: [
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Ghép mã nguồn bài cá nhân tốt nhất vào app.py",
-              steps: ["Chọn bản code Task 9-10 tốt nhất của nhóm", "Tích hợp vào app.py và group_project/", "Giám sát tiến độ làm báo cáo evaluation"],
+              steps: ["Chọn bản code Task 9-10 tốt nhất của nhóm", "Tích hợp vào app.py và group_project/", "Giám sát tiến độ làm báo cáo evaluation", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "app.py | group_project/", gotcha: "Yêu cầu hoàn thành ngay trong buổi học."
             },
             {
@@ -1163,7 +1092,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Điều phối bài tập nhóm & kiểm tra results.md",
-              steps: ["Phân công ghép mã nguồn nhóm", "Đảm bảo file results.md có đầy đủ bảng điểm RAGAS"],
+              steps: ["Phân công ghép mã nguồn nhóm", "Đảm bảo file results.md có đầy đủ bảng điểm RAGAS", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "group_project/evaluation/results.md", gotcha: "Nộp đủ app.py và results.md."
             },
             {
@@ -1195,7 +1124,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Quản lý bài tập nhóm 6 người & chuẩn bị nộp",
-              steps: ["Tổng hợp code vào app.py", "Kiểm tra file results.md hoàn tất"],
+              steps: ["Tổng hợp code vào app.py", "Kiểm tra file results.md hoàn tất", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "group_project/", gotcha: "Đảm bảo cả 6 người có tên trong phân công."
             },
             {
@@ -1234,16 +1163,16 @@
       {
         id: 6,
         badge: "CHECKPOINT 6",
-        title: "Thuyết Trình Demo Live (80 Phút) & Nộp Bài",
-        durationMinutes: 80,
-        quickCmd: "git add .; git commit -m 'Final RAG submission'; git push origin main",
-        passCriteria: "Tất cả các nhóm hoàn tất thuyết trình live demo ứng dụng Streamlit trước lớp (80 phút = 1h 20m) và cập nhật mã nguồn lên GitHub.",
+        title: "Thuyết Trình Demo Live (45 Phút) & Nộp Bài",
+        durationMinutes: 45,
+        quickCmd: "git add .\ngit commit -m 'Final RAG submission'\ngit push origin main",
+        passCriteria: "Tất cả các nhóm hoàn tất thuyết trình live demo ứng dụng Streamlit trước lớp (45 phút) và cập nhật mã nguồn lên GitHub.",
         roles: {
           4: [
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Thuyết trình tổng quan hệ thống Chatbot RAG",
-              steps: ["Trình bày sơ đồ kiến trúc Hybrid RAG + Fallback", "Báo cáo phân công công việc của nhóm", "Dẫn dắt phần Q&A trước lớp"],
+              steps: ["Trình bày sơ đồ kiến trúc Hybrid RAG + Fallback", "Báo cáo phân công công việc của nhóm", "Dẫn dắt phần Q&A trước lớp", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "Slide / Live Demo", gotcha: "Nhấn mạnh điểm nổi bật của Hybrid + Citation."
             },
             {
@@ -1269,7 +1198,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Thuyết trình giới thiệu ứng dụng nhóm",
-              steps: ["Trình bày tổng quan mục tiêu & kiến trúc dự án", "Điều phối các thành viên trả lời câu hỏi"],
+              steps: ["Trình bày tổng quan mục tiêu & kiến trúc dự án", "Điều phối các thành viên trả lời câu hỏi", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "Slide / Live Demo", gotcha: "Quản lý thời gian thuyết trình trong 5-7 phút."
             },
             {
@@ -1301,7 +1230,7 @@
             {
               role: "Role 1", name: "Team Leader & Architect", badgeClass: "badge-r1",
               goal: "Thuyết trình tổng thể kiến trúc nhóm 6 người",
-              steps: ["Báo cáo tổng quan dự án RAG Pipeline v2", "Giới thiệu phân công công việc của 6 người"],
+              steps: ["Báo cáo tổng quan dự án RAG Pipeline v2", "Giới thiệu phân công công việc của 6 người", "Đồng bộ code lên Git + theo dõi tiến độ các thành viên trong nhóm"],
               file: "Slide / Live Demo", gotcha: "Trình bày chuyên nghiệp, tự tin."
             },
             {
