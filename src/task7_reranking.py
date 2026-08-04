@@ -126,30 +126,22 @@ def rerank_rrf(
     Returns:
         List of top_k candidates sorted by RRF score descending.
     """
-    rrf_scores = {}  # content -> score
-    content_map = {}  # content -> full dict
+    rrf_scores: dict[str, float] = {}
+    content_map: dict[str, dict] = {}
 
+    # 1. Tính điểm RRF cho từng candidate: cộng dồn 1 / (k + rank) qua mọi ranker
     for ranked_list in ranked_lists:
         for rank, item in enumerate(ranked_list, 1):
             key = item["content"]
             rrf_scores[key] = rrf_scores.get(key, 0) + 1 / (k + rank)
-            # Giữ lại item với metadata ban đầu. Nếu trùng lặp thì map sẽ update item cuối, nhưng content_map là an toàn vì dict items trỏ tới metadata.
-            if key not in content_map:
-                content_map[key] = item
-            else:
-                # Gộp score để debug hoặc giữ source lai hybrid
-                content_map[key]["score"] = max(content_map[key]["score"], item["score"])
+            content_map[key] = item
 
-    # Sort by RRF score
     sorted_items = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
 
+    # 2. Trả về list top_k candidates, sort theo điểm RRF giảm dần
     results = []
     for content, score in sorted_items[:top_k]:
         item = content_map[content].copy()
-        item["rrf_score"] = score # Lưu lại rrf_score
-        # Ở đây ta KHÔNG ghi đè trường "score" gốc, để task 9 còn fallback.
-        # Hoặc nếu task 9 dùng nguyên raw list của dense search thì ở đây update score thành RRF cũng được.
-        # Ta sẽ dùng RRF score để hiển thị
         item["score"] = score
         results.append(item)
 
