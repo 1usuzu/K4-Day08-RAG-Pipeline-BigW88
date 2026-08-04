@@ -96,31 +96,45 @@ if prompt:
 
     # Chạy AI sinh câu trả lời
     with st.chat_message("assistant"):
-        with st.spinner(f"Đang lục tìm chính sách (lấy top {top_k} tài liệu)..."):
+        with st.status(f"⚙️ Phân tích truy vấn & Kích hoạt RAG Pipeline (Top_k = {top_k})...", expanded=True) as status:
+            st.write("1. 🔍 **Dense Search**: Nhúng truy vấn và tìm kiếm vector bằng `BAAI/bge-m3`...")
+            st.write("2. 🔍 **Sparse Search**: Tìm kiếm từ khóa bằng thuật toán `BM25`...")
+            st.write("3. ⚖️ **Reranking**: Trộn & xếp hạng lại kết quả bằng `Reciprocal Rank Fusion (RRF)`...")
+            st.write("4. 🛡️ **Fallback**: Đánh giá độ lệch chuẩn để kích hoạt Vectorless Index nếu cần...")
+            st.write("5. 🧠 **Generation**: Nhồi ngữ cảnh vào OpenRouter LLM để sinh câu trả lời...")
+            
             try:
                 # Nối hàm Task 10 và truyền top_k vào
                 result = generate_with_citation(prompt, top_k=top_k)
                 answer = result["answer"]
                 sources = result["sources"]
+                retrieval_source = result.get("retrieval_source", "hybrid")
                 
-                # Hiển thị câu trả lời
-                st.markdown(answer)
-                
-                # Xử lý danh sách sources trả về cho UI
-                if sources:
-                    with st.expander("📚 Nguồn trích dẫn"):
-                        for i, src in enumerate(sources, 1):
-                            source_name = src.get('metadata', {}).get('source', 'Unknown')
-                            st.markdown(f"**[{i}] File: {source_name}**")
-                            st.text(src.get('content', '')[:300] + "...")
-                
-                # Lưu vào lịch sử
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "content": answer,
-                    "sources": sources
-                })
+                status.update(label=f"✅ Truy xuất thành công {len(sources)} tài liệu (Luồng: {retrieval_source.upper()})", state="complete", expanded=False)
+            
             # Bắt try/except nếu LLM bị lỗi
             except Exception as e:
+                answer = None
+                sources = []
+                status.update(label="❌ Lỗi hệ thống", state="error", expanded=True)
                 st.error(f"Đã xảy ra lỗi từ LLM hoặc hệ thống: {str(e)}")
                 st.markdown("*(Gợi ý: Kiểm tra lại API Key hoặc xem kết nối mạng)*")
+        
+        if answer:
+            # Hiển thị câu trả lời
+            st.markdown(answer)
+            
+            # Xử lý danh sách sources trả về cho UI
+            if sources:
+                with st.expander("📚 Nguồn trích dẫn"):
+                    for i, src in enumerate(sources, 1):
+                        source_name = src.get('metadata', {}).get('source', 'Unknown')
+                        st.markdown(f"**[{i}] File: {source_name}**")
+                        st.text(src.get('content', '')[:300] + "...")
+            
+            # Lưu vào lịch sử
+            st.session_state.messages.append({
+                "role": "assistant", 
+                "content": answer,
+                "sources": sources
+            })
