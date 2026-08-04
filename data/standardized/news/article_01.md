@@ -1,0 +1,15 @@
+# [Đơn hàng] Tại sao đơn hàng của tôi chưa cập nhật trạng thái?
+
+**Source:** https://help.shopee.vn/portal/4/article/79047-%5B%C4%90%C6%A1n-h%C3%A0ng%5D-T%E1%BA%A1i-sao-%C4%91%C6%A1n-h%C3%A0ng-c%E1%BB%A7a-t%C3%B4i-ch%C6%B0a-c%E1%BA%ADp-nh%E1%BA%ADt-tr%E1%BA%A1ng-th%C3%A1i
+**Crawled:** 2026-08-04T14:00:34.950043
+
+---
+
+# [Đơn hàng] Tại sao đơn hàng của tôi chưa cập nhật trạng thái?
+
+Shopee mong bạn kiên nhẫn và thông cảm nếu thời gian chuẩn bị và giao hàng có lâu hơn dự kiến Dành cho Người mua Với hoạt động vận chuyển hạn chế trong thời gian giãn cách và số lượng lớn đơn hàng cần xử lý, đội ngũ Shopee vẫn nỗ lực hỗ trợ để đảm bảo Người bán và các Đơn vị vận chuyển (ĐVVC) có đủ thời gian và nhân lực để chuẩn bị hàng cũng như giao hàng thành công
+Shopee sẽ chủ động điều chỉnh thời gian điều phối đơn hàng đến Shop. Bạn đừng quá lo lắng khi thấy thông báo này trong Cập nhật đơn hàng
+Trong thời gian Shopee điều phối đơn hàng, bạn sẽ thấy “ Đang điều phối ĐVVC ” trong Thông tin vận chuyển và chưa thấy trạng thái đơn hàng được cập nhật
+Bạn vui lòng chờ thêm trong 24H làm việc nhé, Người bán sẽ chuẩn bị hàng sẵn sàng và xử lý ngay khi được điều phối đơn. Shopee sẽ cập nhật đến bạn khi đơn hàng được giao cho ĐVVC
+(Hình minh họa bên dưới)
+Dành cho Người bán Tham khảo hướng dẫn về Phân bổ đơn vị vận chuyển trên Học viện Shopee . Xem thêm: Cẩm nang mua hàng

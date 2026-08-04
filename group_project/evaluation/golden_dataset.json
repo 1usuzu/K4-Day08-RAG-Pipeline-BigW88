@@ -1,17 +1,77 @@
 [
   {
-    "question": "Người mua có thể yêu cầu trả hàng/hoàn tiền trong thời hạn bao lâu sau khi nhận hàng?",
-    "expected_answer": "Trong vòng 15 ngày kể từ khi giao hàng thành công (24 giờ đối với thực phẩm tươi sống/đông lạnh).",
-    "expected_context": "Trang Returns and Refunds Policy, mục Return/Refund Eligibility"
+    "question": "Người mua có thể gửi yêu cầu trả hàng/hoàn tiền trong thời hạn bao lâu kể từ lúc giao hàng thành công?",
+    "expected_answer": "Trong vòng 15 ngày kể từ lúc đơn hàng được cập nhật giao hàng thành công. Riêng đối với thực phẩm tươi sống và đông lạnh là trong vòng 24 giờ.",
+    "expected_context": "shopee_chinh_sach_tra_hang_hoan_tien.md"
   },
   {
-    "question": "Shopee hỗ trợ những phương thức thanh toán nào?",
-    "expected_answer": "ShopeePay Wallet, thẻ tín dụng/ghi nợ, trả góp qua thẻ, QR Code, chuyển khoản qua app ngân hàng, thẻ NAPAS, Apple Pay, Google Pay, và COD.",
-    "expected_context": "Trang Payment Methods Overview"
+    "question": "Khi nào hóa đơn SPayLater được xem là quá hạn và phí trả chậm phát sinh là bao nhiêu?",
+    "expected_answer": "Hóa đơn được xem là quá hạn sau Ngày đến hạn mà chưa thanh toán toàn bộ số tiền. Phí trả chậm phát sinh là 30.000 VNĐ/kỳ (mức cố định), phát sinh 01 ngày sau ngày đến hạn thanh toán.",
+    "expected_context": "article_13.md"
   },
   {
-    "question": "Người bán không được đăng bán những sản phẩm nào?",
-    "expected_answer": "Hàng giả/nhái, sản phẩm bất hợp pháp, vi phạm sở hữu trí tuệ, và các mặt hàng nằm trong danh sách cấm của sàn.",
-    "expected_context": "Trang Product Listing Regulations, mục Prohibited Content"
+    "question": "Kênh vận chuyển nào hỗ trợ người bán đăng bán sản phẩm cây cảnh trên Shopee?",
+    "expected_answer": "Người Bán chỉ được hỗ trợ kênh vận chuyển Hỏa Tốc và Nhanh cho sản phẩm cây cảnh.",
+    "expected_context": "shopee_chinh_sach_van_chuyen.md"
+  },
+  {
+    "question": "Quy trình giải quyết tranh chấp trả hàng/hoàn tiền của Shopee gồm những bước nào?",
+    "expected_answer": "Bước 1: Người Mua bấm khiếu nại ngay. Bước 2: Bộ phận giải quyết khiếu nại của Shopee tiếp nhận yêu cầu. Bước 3: Xử lý theo Chính Sách Trả Hàng Và Hoàn Tiền. Bước 4: Nếu nằm ngoài khả năng và thẩm quyền, chuyển vụ việc ra cơ quan nhà nước có thẩm quyền.",
+    "expected_context": "shopee_quy_dinh_giai_quyet_tranh_chap.md"
+  },
+  {
+    "question": "Người bán cần lưu ý gì về hạn sử dụng khi đăng bán mặt hàng thực phẩm trên Shopee?",
+    "expected_answer": "Thực phẩm phải còn hạn sử dụng ít nhất 30 ngày. Đối với thực phẩm có hạn sử dụng dưới 30 ngày, Người Bán cần ghi rõ hạn sử dụng trong phần mô tả.",
+    "expected_context": "shopee_quy_dinh_dang_ban_san_pham.md"
+  },
+  {
+    "question": "Shopee thu thập những loại dữ liệu cá nhân nào từ người dùng?",
+    "expected_answer": "Họ tên, địa chỉ email, ngày sinh, địa chỉ giao hàng, thông tin tài khoản ngân hàng và thanh toán, số điện thoại, hình ảnh, thông tin thiết bị và mạng.",
+    "expected_context": "shopee_chinh_sach_bao_mat.md"
+  },
+  {
+    "question": "Điều gì xảy ra từ ngày 25/12/2024 nếu người dùng SPayLater chưa hoàn tất xác thực CCCD bằng NFC?",
+    "expected_answer": "Tài khoản SPayLater sẽ bị khóa, không thể mua hàng và thanh toán dịch vụ bằng phương thức SPayLater cho đến khi xác thực thành công.",
+    "expected_context": "article_15.md"
+  },
+  {
+    "question": "Người bán cần phản hồi yêu cầu trả hàng/hoàn tiền của Người mua trong thời hạn bao lâu kể từ thông báo của Shopee?",
+    "expected_answer": "Người Bán cần gửi phản hồi trong vòng 02 ngày lịch kể từ ngày nhận được thông báo của Shopee.",
+    "expected_context": "shopee_chinh_sach_tra_hang_hoan_tien.md"
+  },
+  {
+    "question": "Để hủy gia hạn gói ShopeeVIP, người dùng cần thực hiện những bước nào trên ứng dụng Shopee?",
+    "expected_answer": "Bước 1: Trên trang chủ ứng dụng Shopee, bạn truy cập trang Quản lý gói ShopeeVIP. Bước 2: Tại trang Quản lý gói, chọn Hủy đăng ký và chọn Xác nhận hủy.",
+    "expected_context": "article_10.md"
+  },
+  {
+    "question": "Giới hạn tối đa khi sử dụng Shopee Xu để thanh toán cho đơn hàng là bao nhiêu?",
+    "expected_answer": "Số Shopee Xu được sử dụng khi thanh toán tương đương tối đa 50% giá trị đơn hàng. Giới hạn là 500.000 Xu/ngày và 1.500.000 Xu/tuần.",
+    "expected_context": "article_08.md"
+  },
+  {
+    "question": "Gói ưu đãi ShopeeVIP bổ sung thêm loại Voucher mới nào từ ngày 08/08/2025?",
+    "expected_answer": "Voucher đến từ thương hiệu (Brand Voucher) – ưu đãi độc quyền đến từ các thương hiệu hàng đầu trên Shopee.",
+    "expected_context": "article_11.md"
+  },
+  {
+    "question": "Theo quy định đăng bán sản phẩm của Shopee, hạn sử dụng ghi dưới dạng \"hạn sử dụng: tháng/năm\" được hiểu là ngày nào?",
+    "expected_answer": "Hạn sử dụng của sản phẩm được ghi dưới dạng \"hạn sử dụng: tháng/năm\" sẽ được hiểu ngày hết hạn là ngày cuối cùng của tháng đó.",
+    "expected_context": "shopee_quy_dinh_dang_ban_san_pham.md"
+  },
+  {
+    "question": "ShopeePay hỗ trợ thanh toán trực tuyến tại các đối tác nào được nêu trong tài liệu?",
+    "expected_answer": "Các đối tác chấp nhận thanh toán trực tuyến của ShopeePay gồm Fshare, Garena.",
+    "expected_context": "article_06.md"
+  },
+  {
+    "question": "Trong trường hợp hàng hóa bị thất lạc khi hoàn trả, Người Bán cần gửi khiếu nại trong thời gian bao lâu?",
+    "expected_answer": "Trong vòng 07 ngày sau khi đơn hàng được cập nhật trạng thái chuyển hoàn.",
+    "expected_context": "shopee_chinh_sach_van_chuyen.md"
+  },
+  {
+    "question": "Quy định về bảo mật trong thanh toán trực tuyến và thẻ ngân hàng yêu cầu thủ tục phát hành thẻ bằng phương tiện điện tử như SPayLater phải làm gì?",
+    "expected_answer": "Cần phải thông qua quy trình xác thực thông tin bằng phương pháp sinh trắc học (xác minh khuôn mặt) khớp với dữ liệu quét NFC thẻ CCCD gắn chíp.",
+    "expected_context": "article_14.md"
   }
 ]

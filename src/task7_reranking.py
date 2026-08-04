@@ -14,14 +14,23 @@ bất kể nội dung đó có thật sự liên quan đến câu hỏi hay khô
 quyết định fallback ở Task 9 — xem ghi chú ở đó.
 """
 
+import os
 from typing import Optional
+
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+JINA_API_KEY = os.getenv("JINA_API_KEY", "")
+JINA_RERANK_URL = "https://api.jina.ai/v1/rerank"
 
 
 def rerank_cross_encoder(
     query: str, candidates: list[dict], top_k: int = 5
 ) -> list[dict]:
     """
-    Rerank candidates sử dụng cross-encoder model.
+    Rerank candidates sử dụng cross-encoder model (Jina Reranker v2 multilingual).
 
     Args:
         query: Câu truy vấn
@@ -29,32 +38,38 @@ def rerank_cross_encoder(
         top_k: Số lượng kết quả sau rerank
 
     Returns:
-        List of top_k candidates, re-scored và sorted by rerank_score descending.
+        List of top_k candidates, re-scored (key "score") và sorted descending.
     """
-    # TODO: Implement cross-encoder reranking
-    #
-    # Option A: Jina Reranker API
-    # import requests
-    # response = requests.post(
-    #     "https://api.jina.ai/v1/rerank",
-    #     headers={"Authorization": f"Bearer {JINA_API_KEY}"},
-    #     json={
-    #         "model": "jina-reranker-v2-base-multilingual",
-    #         "query": query,
-    #         "documents": [c["content"] for c in candidates],
-    #         "top_n": top_k
-    #     }
-    # )
-    # reranked = response.json()["results"]
-    # return [
-    #     {**candidates[r["index"]], "score": r["relevance_score"]}
-    #     for r in reranked
-    # ]
-    #
-    # Option B: Local model (Qwen3-Reranker)
-    # from transformers import AutoModelForSequenceClassification, AutoTokenizer
-    # ...
-    raise NotImplementedError("Implement rerank_cross_encoder")
+    if not candidates:
+        return []
+
+    if not JINA_API_KEY:
+        raise RuntimeError(
+            "Thiếu JINA_API_KEY trong .env — cần key để gọi Jina Reranker API "
+            "(https://jina.ai/reranker/), hoặc dùng method='rrf' thay thế."
+        )
+
+    response = requests.post(
+        JINA_RERANK_URL,
+        headers={
+            "Authorization": f"Bearer {JINA_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "jina-reranker-v2-base-multilingual",
+            "query": query,
+            "documents": [c["content"] for c in candidates],
+            "top_n": top_k,
+        },
+        timeout=20,
+    )
+    response.raise_for_status()
+    reranked = response.json()["results"]
+
+    return [
+        {**candidates[r["index"]], "score": r["relevance_score"]}
+        for r in reranked
+    ]
 
 
 def rerank_mmr(
@@ -126,28 +141,38 @@ def rerank_rrf(
     Returns:
         List of top_k candidates sorted by RRF score descending.
     """
-    # TODO: Implement RRF
+    rrf_scores: dict[str, float] = {}
+    content_map: dict[str, dict] = {}
+
+    # 1. Tính điểm RRF cho từng candidate: cộng dồn 1 / (k + rank) qua mọi ranker
     #
-    # rrf_scores = {}  # content -> score
-    # content_map = {}  # content -> full dict
-    #
-    # for ranked_list in ranked_lists:
-    #     for rank, item in enumerate(ranked_list, 1):
-    #         key = item["content"]
-    #         rrf_scores[key] = rrf_scores.get(key, 0) + 1 / (k + rank)
-    #         content_map[key] = item
-    #
-    # # Sort by RRF score
-    # sorted_items = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
-    #
-    # results = []
-    # for content, score in sorted_items[:top_k]:
-    #     item = content_map[content].copy()
-    #     item["score"] = score
-    #     results.append(item)
-    #
-    # return results
-    raise NotImplementedError("Implement rerank_rrf")
+    # Dùng "{source}_chunk_{chunk_index}" (cùng công thức id ở Task 4) làm key
+    # thay vì content text thô — 2 ranker có thể trả về chunk trùng nội dung
+    # (ví dụ do overlap) nhưng khác metadata; nếu key theo content, bản ghi
+    # sau sẽ đè mất source/chunk_index của bản trước trong content_map.
+    for ranked_list in ranked_lists:
+        for rank, item in enumerate(ranked_list, 1):
+            metadata = item.get("metadata") or {}
+            source = metadata.get("source")
+            chunk_index = metadata.get("chunk_index")
+            if source is not None and chunk_index is not None:
+                key = f"{source}_chunk_{chunk_index}"
+            else:
+                key = item["content"]
+
+            rrf_scores[key] = rrf_scores.get(key, 0) + 1 / (k + rank)
+            content_map[key] = item
+
+    sorted_items = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+
+    # 2. Trả về list top_k candidates, sort theo điểm RRF giảm dần
+    results = []
+    for content, score in sorted_items[:top_k]:
+        item = content_map[content].copy()
+        item["score"] = score
+        results.append(item)
+
+    return results
 
 
 # =============================================================================
@@ -173,13 +198,19 @@ def rerank(
         List of top_k reranked candidates.
     """
     if method == "cross_encoder":
+        if not JINA_API_KEY:
+            print(
+                "⚠ Thiếu JINA_API_KEY trong .env — fallback sang RRF "
+                "(không cần API key)."
+            )
+            return rerank_rrf([candidates], top_k=top_k)
         return rerank_cross_encoder(query, candidates, top_k)
     elif method == "mmr":
         # Cần query_embedding - embed query trước
         raise NotImplementedError("Call rerank_mmr with query_embedding")
     elif method == "rrf":
-        # RRF cần nhiều ranked lists - gọi riêng
-        raise NotImplementedError("Call rerank_rrf with ranked_lists")
+        # Simulate RRF with a single list for the general interface
+        return rerank_rrf([candidates], top_k=top_k)
     else:
         raise ValueError(f"Unknown rerank method: {method}")
 
