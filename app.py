@@ -150,14 +150,9 @@ st.markdown(
 )
 
 with st.sidebar:
-    st.markdown("## 💬 Tuỳ chỉnh hội thoại")
+    st.markdown("## ⚙️ Tuỳ chỉnh tìm kiếm")
     st.caption("Điều chỉnh cách chatbot tra cứu nguồn tham khảo.")
-    st.divider()
-    st.markdown("#### Thiết lập tìm kiếm")
-    top_k = st.slider("Số nguồn tham khảo", min_value=3, max_value=10, value=5)
-    st.caption("Nhiều nguồn hơn giúp đối chiếu tốt hơn nhưng có thể chậm hơn.")
-    st.divider()
-    st.subheader("⚙️ Thiết lập")
+    
     top_k = st.slider(
         "Số chunks retrieval (top_k)",
         min_value=3,
@@ -165,6 +160,7 @@ with st.sidebar:
         value=5,
         help="Số lượng chunks tài liệu được đưa vào context cho LLM. Tăng top_k → nhiều evidence hơn nhưng dễ 'lost in the middle'; giảm top_k → câu trả lời tập trung hơn nhưng có thể thiếu ngữ cảnh.",
     )
+    st.caption("Nhiều nguồn hơn giúp đối chiếu tốt hơn nhưng có thể chậm hơn.")
 
     st.divider()
     st.subheader("🧭 Kiến trúc hệ thống")
