@@ -79,10 +79,11 @@ def answer_question(query: str, top_k: int) -> tuple[str, list[dict]]:
         return response.get("answer", "Tôi chưa tìm được câu trả lời phù hợp."), response.get(
             "sources", []
         )
-    except Exception:
+    except Exception as e:
+        import traceback
+        st.error(f"Lỗi hệ thống: {e}\n\n{traceback.format_exc()}")
         return (
-            "Mình chưa thể kết nối dịch vụ trả lời ngay lúc này. "
-            "Bạn thử lại sau ít phút nhé.",
+            f"Lỗi: {e}",
             [],
         )
 
