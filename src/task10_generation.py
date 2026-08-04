@@ -38,7 +38,7 @@ TOP_P = 0.9
 TEMPERATURE = 0.3
 
 # TODO: Chọn LLM model (OpenRouter model ID)
-LLM_MODEL = "google/gemma-4-26b-a4b-it:free"  # Đổi sang model free 100% để tránh lỗi 402 Insufficient credits
+LLM_MODEL = "openai/gpt-4o-mini"  # hoặc model ":free" nếu chưa có credit
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 UNVERIFIED_ANSWER = "Tôi không thể xác minh thông tin này từ nguồn hiện có."
 

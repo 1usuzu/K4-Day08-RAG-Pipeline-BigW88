@@ -7,7 +7,7 @@ Chạy ứng dụng:
 import sys
 from pathlib import Path
 
-import streamlit as st
+import streamlit as st  # trigger reload
 from dotenv import load_dotenv
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
