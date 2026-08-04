@@ -69,20 +69,37 @@ Xem code mẫu (DeepEval/RAGAS/TruLens) chi tiết trong `README.md` gốc mục
 
 ## Kiến Trúc Hệ Thống
 
-```
-[Vẽ diagram kiến trúc ở đây]
+```mermaid
+graph TD
+    User([Người Dùng]) -->|Truy vấn| UI[Streamlit App]
+    UI -->|Query| Hybrid[Hybrid Search & Reranking]
+    
+    subgraph "Retrieval Pipeline (Task 9)"
+        Hybrid --> Dense[Semantic Search<br>BAAI/bge-m3 + ChromaDB]
+        Hybrid --> Sparse[Lexical Search<br>BM25]
+        Dense --> Merge[RRF Reranking]
+        Sparse --> Merge
+        Merge --> Check{Max Score < Threshold?}
+        Check -->|Có| Fallback[PageIndex Fallback<br>Vectorless Search]
+        Check -->|Không| TopK[Top-K Documents]
+        Fallback --> TopK
+    end
+    
+    TopK --> Gen[LLM Generation<br>OpenRouter GPT-4o-mini]
+    Gen -->|Answer & Citation| UI
 ```
 
 ---
 
 ## Phân Công Công Việc
 
-| Thành viên | MSSV | Nhiệm vụ | Trạng thái |
+| Thành viên (Role) | MSSV | Nhiệm vụ | Trạng thái |
 |-----------|------|----------|------------|
-| | | | |
-| | | | |
-| | | | |
-| | | | |
+| **Role 1** - Team Leader & Architect | (Cập nhật) | Điều phối ghép code, quản lý Git, thuyết trình Slide | Hoàn thành |
+| **Role 2** - Data & Dense Search Dev | (Cập nhật) | Cài đặt ChromaDB, Embedding & cơ chế HyDE | Hoàn thành |
+| **Role 3** - Sparse & Rerank Dev | (Cập nhật) | Thuật toán BM25, RRF và Fallback PageIndex | Hoàn thành |
+| **Role 4** - Frontend & Chatbot Dev | (Cập nhật) | Lên giao diện Streamlit, thiết lập LLM Generation & Citation | Hoàn thành |
+| **Role 5** - Evaluation & QA Engineer | (Cập nhật) | Xây dựng tập Golden Dataset, viết A/B test bằng RAGAS | Hoàn thành |
 
 ---
 
