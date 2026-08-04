@@ -549,8 +549,57 @@ run_dashboard()
 
 ### Kiến Trúc Hệ Thống
 
-```
-[Vẽ diagram kiến trúc ở đây]
+Sơ đồ dưới đây mô tả luồng dữ liệu và luồng xử lý chính của hệ thống RAG Chatbot: từ thu thập dữ liệu, chuẩn hoá, indexing, hybrid retrieval, PageIndex fallback cho đến sinh câu trả lời có citation trên giao diện Streamlit.
+
+```mermaid
+flowchart TB
+  U["Người dùng"] --> UI["app.py<br/>Streamlit Chatbot UI"]
+  UI -->|Câu hỏi + top_k| T10["Task 10<br/>generate_with_citation()"]
+
+  T10 --> T9["Task 9<br/>Hybrid Retrieval Pipeline"]
+  T9 --> T5["Task 5<br/>Semantic Search"]
+  T9 --> T6["Task 6<br/>BM25 Lexical Search"]
+
+  T5 --> CHROMA["chroma_db<br/>ChromaDB Vector Store"]
+  T6 --> BM25["BM25 index<br/>từ Markdown corpus"]
+
+  T5 --> T7["Task 7<br/>RRF Reranking"]
+  T6 --> T7
+  T7 --> GATE{"Best dense score<br/>≥ 0.48?"}
+
+  GATE -->|Có| CTX["Top-k chunks"]
+  GATE -->|Không| T8["Task 8<br/>PageIndex Vectorless Fallback"]
+  T8 --> CTX
+
+  CTX --> REORDER["reorder_for_llm()<br/>giảm lost in the middle"]
+  REORDER --> FORMAT["format_context()<br/>gắn source/citation"]
+  FORMAT --> LLM["OpenRouter LLM<br/>openai/gpt-4o-mini"]
+  LLM --> UI
+  UI --> SOURCES["Hiển thị câu trả lời<br/>+ nguồn tham khảo"]
+
+  subgraph INGEST["Data Ingestion & Indexing"]
+    T1["Task 1<br/>PDF chính sách Shopee"] --> LANDING["data/landing/"]
+    T2["Task 2<br/>JSON bài hỗ trợ"] --> LANDING
+
+    LANDING --> T3["Task 3<br/>Convert sang Markdown"]
+    T3 --> STD["data/standardized/<br/>legal + news Markdown"]
+
+    STD --> T4["Task 4<br/>Chunk 800<br/>Overlap 100"]
+    T4 --> EMB["Embedding<br/>BAAI/bge-m3<br/>1024 dim"]
+    EMB --> CHROMA
+
+    STD --> BM25
+    LANDING --> PDF["Legal PDFs"]
+    PDF --> UPLOAD["Task 8<br/>upload_documents()"]
+    UPLOAD --> CACHE["data/pageindex_doc_ids.json"]
+    CACHE --> T8
+  end
+
+  subgraph EVAL["Evaluation"]
+    GOLDEN["golden_dataset.json"] --> EVALPIPE["eval_pipeline.py<br/>RAGAS / DeepEval / TruLens"]
+    T10 -.-> EVALPIPE
+    EVALPIPE --> REPORT["results.md"]
+  end
 ```
 
 ---
@@ -559,11 +608,11 @@ run_dashboard()
 
 | Thành viên | MSSV | Nhiệm vụ | Trạng thái |
 |-----------|------|----------|------------|
-| | | | |
-| | | | |
-| | | | |
-| | | | |
-
+| Nguyễn Phương Thuỳ|2A202601953 | Role 4| Done|
+| Nguyễn Thị Huyền Trang| 2A202601960 | Role 5| Done |
+| Lê Thị Trúc Linh | 2A202601322 | Role 3 | Done |
+|Lưu Xuân Dũng | 2A202601774| Role 2| Done |
+| Ngô Lưu Quốc Đạt | 2A202602014 | Role 2 | Done |
 ---
 
 ### Hướng Dẫn Chạy
