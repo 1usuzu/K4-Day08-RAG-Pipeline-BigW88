@@ -10,6 +10,10 @@ from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
 
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 load_dotenv()
 
 PROJECT_ROOT = Path(__file__).parent
@@ -153,45 +157,68 @@ with st.sidebar:
     top_k = st.slider("Số nguồn tham khảo", min_value=3, max_value=10, value=5)
     st.caption("Nhiều nguồn hơn giúp đối chiếu tốt hơn nhưng có thể chậm hơn.")
     st.divider()
-    st.markdown("#### Trạng thái")
-    st.success("Sẵn sàng hỗ trợ")
-    st.caption("Hybrid retrieval · Citation")
-    if st.button("Xoá cuộc trò chuyện", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.pending_query = None
-        st.rerun()
+    st.subheader("⚙️ Thiết lập")
+    top_k = st.slider(
+        "Số chunks retrieval (top_k)",
+        min_value=3,
+        max_value=10,
+        value=5,
+        help="Số lượng chunks tài liệu được đưa vào context cho LLM. Tăng top_k → nhiều evidence hơn nhưng dễ 'lost in the middle'; giảm top_k → câu trả lời tập trung hơn nhưng có thể thiếu ngữ cảnh.",
+    )
 
-st.markdown(
-    """
-    <div class="topbar">
-      <div class="brand">TRỢ LÝ CHÍNH SÁCH SHOPEE<span>Hỗ trợ mua sắm thông minh</span></div>
-      <div class="top-actions">Tra cứu chính sách <b>● Trực tuyến</b></div>
-    </div>
-    <section class="hero">
-      <div class="eyebrow">XIN CHÀO QUÝ KHÁCH</div>
-      <h1>Mình có thể hỗ trợ gì cho bạn?</h1>
-      <p>Tra cứu nhanh thông tin về vận chuyển, thanh toán, đổi trả và quy định người bán. Mỗi câu trả lời đều đi kèm nguồn tham khảo để bạn tiện kiểm tra.</p>
-    </section>
-    """,
-    unsafe_allow_html=True,
-)
-
-if not st.session_state.messages:
-    with st.chat_message("assistant", avatar="💬"):
+    st.divider()
+    st.subheader("🧭 Kiến trúc hệ thống")
+    with st.expander("Supervisor + Workers song song", expanded=False):
         st.markdown(
-            "Mình là trợ lý hỗ trợ mua sắm. Bạn có thể hỏi về **đổi trả**, "
-            "**vận chuyển**, **thanh toán** hoặc **quy định người bán**."
+            """
+**Supervisor** (`task9_retrieval_pipeline.retrieve`) điều phối 2 workers chạy song song rồi tổng hợp kết quả:
+
+1. 🔎 **Semantic Worker** — dense vector search (embeddings)
+2. 🔤 **Lexical Worker** — BM25 keyword search
+Maybe I'm like
+**Supervisor** sau đó:
+- Merge kết quả 2 workers bằng **RRF** (Reciprocal Rank Fusion)
+- **Rerank** lại theo mức độ liên quan
+- Nếu điểm cosine gốc (semantic) < ngưỡng → **fallback** sang **PageIndex** (vectorless)
+- Trả `top_k` chunks tốt nhất cho **LLM Generation** sinh câu trả lời kèm citation
+            """
         )
+    st.caption("Hybrid Retrieval (Semantic + BM25) → RRF Rerank → PageIndex Fallback → LLM Generation có Citation")
 
-    st.markdown('<div class="suggestion-label">GỢI Ý CÂU HỎI</div>', unsafe_allow_html=True)
-    first_column, second_column = st.columns(2)
-    for index, suggestion in enumerate(SUGGESTIONS):
-        column = first_column if index % 2 == 0 else second_column
-        if column.button(suggestion, key=f"suggestion_{index}", use_container_width=True):
-            st.session_state.pending_query = suggestion
+# =============================================================================
+# SESSION STATE
+# =============================================================================
 
-for message in st.session_state.messages:
-    render_message(message)
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "pending_query" not in st.session_state:
+    st.session_state.pending_query = None
+
+# =============================================================================
+# MAIN CHAT AREA
+# =============================================================================
+
+st.title("🛒 E-commerce Support RAG Chatbot")
+st.caption("Hệ thống hỏi đáp chính sách e-commerce và trợ giúp khách hàng")
+
+# Hiển thị lịch sử chat
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+        if msg["role"] == "assistant" and "sources" in msg and msg["sources"]:
+            with st.expander(f"📚 Nguồn tham khảo ({len(msg['sources'])} chunks)"):
+                for i, src in enumerate(msg["sources"], 1):
+                    meta = src.get("metadata", {})
+                    source_name = meta.get("source", "Unknown")
+                    doc_type = meta.get("type", "unknown")
+                    score = src.get("score", 0)
+                    st.markdown(f"**[{i}] {source_name}** `{doc_type}` | score: `{score:.4f}`")
+                    st.text(src.get("content", "")[:300] + "...")
+                    st.divider()
+
+# =============================================================================
+# QUERY HANDLING
+# =============================================================================
 
 user_input = st.chat_input("Nhập câu hỏi của bạn…")
 query = user_input or st.session_state.pending_query
