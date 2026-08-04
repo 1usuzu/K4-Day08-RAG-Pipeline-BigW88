@@ -27,22 +27,23 @@ st.set_page_config(
 
 # Sidebar
 with st.sidebar:
-    st.header("Thông tin Lab DAY08")
-    st.markdown("**Dự án:** E-commerce Support RAG Chatbot (Track 3)")
+    st.header("Thông tin Kiến trúc")
+    st.markdown("**Kiến trúc Supervisor RAG**")
     st.markdown("""
-    Hệ thống RAG nâng cao kết hợp nhiều kỹ thuật tiên tiến được xây dựng trong chuỗi bài tập:
-    
-    - **Data Pipeline**: Crawl4AI & MarkItDown
-    - **Chunking**: RecursiveCharacterTextSplitter
-    - **Hybrid Search**: Semantic (BAAI/bge-m3) kết hợp Lexical (BM25)
-    - **Vector DB**: ChromaDB Local
-    - **Reranking**: Reciprocal Rank Fusion (RRF)
-    - **Fallback**: Vectorless RAG qua PageIndex API
-    - **Generation**: Áp dụng Lost-in-the-middle reordering
-    - **LLM Engine**: gpt-4o-mini (OpenRouter)
+    Hệ thống sử dụng mô hình Supervisor để điều phối thông minh các luồng:
+    - **Dense Search** (Semantic qua BAAI/bge-m3)
+    - **Sparse Search** (Lexical qua BM25)
+    - **Reranker** (RRF kết hợp xếp hạng)
+    - **Fallback logic** (PageIndex Vectorless)
     """)
     
     st.divider()
+    
+    # Tạo slider điều chỉnh top_k trong sidebar
+    top_k = st.slider("Số lượng chunks (top_k) cần truy xuất:", min_value=3, max_value=10, value=5, step=1)
+    
+    st.divider()
+    
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key or api_key.endswith("..."):
         st.error("CẢNH BÁO: Bạn chưa cấu hình OPENROUTER_API_KEY thật trong file .env!")
@@ -52,14 +53,25 @@ with st.sidebar:
 # Main Chat Interface
 st.title("Shopee Support Assistant")
 st.markdown("""
-Chào mừng bạn đến với Chatbot tư vấn chính sách Shopee. Đây là sản phẩm tổng hợp toàn bộ các kỹ thuật RAG từ Day 08. 
-Hãy thử đặt các câu hỏi hóc búa để kiểm tra khả năng truy xuất, xếp hạng và xử lý ngôn ngữ của Bot nhé!
+Chào mừng bạn đến với Chatbot tư vấn chính sách Shopee. Đây là sản phẩm tổng hợp toàn bộ các kỹ thuật RAG từ Day 08.
 """)
+
+# Thêm các nút bấm gợi ý câu hỏi mẫu
+st.markdown("### Gợi ý câu hỏi:")
+col1, col2, col3 = st.columns(3)
+suggestion_clicked = None
+
+if col1.button("Trả hàng mất phí bao nhiêu?"):
+    suggestion_clicked = "Trả hàng mất phí bao nhiêu?"
+if col2.button("Hóa đơn SPayLater quá hạn thì sao?"):
+    suggestion_clicked = "Hóa đơn SPayLater quá hạn thì bị phạt như thế nào?"
+if col3.button("Hạn sử dụng thực phẩm quy định sao?"):
+    suggestion_clicked = "Quy định về hạn sử dụng thực phẩm đăng bán trên Shopee như thế nào?"
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Hiển thị lại tin nhắn cũ
+# Hiển thị lại tin nhắn cũ bằng khung st.chat_message
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -70,8 +82,13 @@ for message in st.session_state.messages:
                     st.markdown(f"**[{i}] File: {source_name}**")
                     st.text(src.get('content', '')[:300] + "...")
 
-# Xử lý tin nhắn mới
-if prompt := st.chat_input("Nhập câu hỏi (vd: Trả hàng mất phí bao nhiêu?)..."):
+# Xử lý tin nhắn mới (từ ô input hoặc tự động lấy từ nút gợi ý)
+prompt = st.chat_input("Nhập câu hỏi (vd: Trả hàng mất phí bao nhiêu?)...")
+
+if suggestion_clicked:
+    prompt = suggestion_clicked
+
+if prompt:
     # Thêm tin nhắn user vào lịch sử
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -79,16 +96,17 @@ if prompt := st.chat_input("Nhập câu hỏi (vd: Trả hàng mất phí bao nh
 
     # Chạy AI sinh câu trả lời
     with st.chat_message("assistant"):
-        with st.spinner("Đang lục tìm chính sách Shopee..."):
+        with st.spinner(f"Đang lục tìm chính sách (lấy top {top_k} tài liệu)..."):
             try:
-                result = generate_with_citation(prompt)
+                # Nối hàm Task 10 và truyền top_k vào
+                result = generate_with_citation(prompt, top_k=top_k)
                 answer = result["answer"]
                 sources = result["sources"]
                 
                 # Hiển thị câu trả lời
                 st.markdown(answer)
                 
-                # Hiển thị nguồn
+                # Xử lý danh sách sources trả về cho UI
                 if sources:
                     with st.expander("📚 Nguồn trích dẫn"):
                         for i, src in enumerate(sources, 1):
@@ -102,6 +120,7 @@ if prompt := st.chat_input("Nhập câu hỏi (vd: Trả hàng mất phí bao nh
                     "content": answer,
                     "sources": sources
                 })
+            # Bắt try/except nếu LLM bị lỗi
             except Exception as e:
-                st.error(f"Đã xảy ra lỗi: {str(e)}")
-                st.markdown("*(Gợi ý: Kiểm tra lại các file config và API Key)*")
+                st.error(f"Đã xảy ra lỗi từ LLM hoặc hệ thống: {str(e)}")
+                st.markdown("*(Gợi ý: Kiểm tra lại API Key hoặc xem kết nối mạng)*")
